@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Probabilidad y Distribuciones · HumAIno®</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8a96e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HIA Prob">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#07070d;--surface:#0e0e1a;--surface2:#16162a;--border:#2a2a45;
+  --gold:#c8a96e;--gold-dim:#8a6f3e;--cyan:#4fc3c8;
+  --text:#dde0f0;--muted:#666880;--success:#5dba8a;--warn:#e6854a;
+  --ff-h:'Cormorant Garamond',Georgia,serif;--ff-u:'Syne',sans-serif;--ff-m:'JetBrains Mono',monospace;
+  --r:10px;--hbg:rgba(7,7,13,.85);--cg:rgba(255,255,255,.05);--rh:rgba(255,255,255,.02);
+}
+html.light{
+  --bg:#f5f2ec;--surface:#fff;--surface2:#ede8df;--border:#d6cdc0;
+  --gold:#8a5e1e;--gold-dim:#6b4815;--cyan:#1e7a7e;
+  --text:#1c1a2e;--muted:#7a7060;--success:#2a6b4a;--warn:#b04e14;
+  --hbg:rgba(245,242,236,.90);--cg:rgba(0,0,0,.06);--rh:rgba(0,0,0,.02);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;transition:background-color .25s,border-color .2s,color .2s;}
+.btn,.tab-btn,.subtab-btn{transition:opacity .18s,transform .12s,background-color .25s,color .2s,border-color .2s !important;}
+body{background:var(--bg);color:var(--text);font-family:var(--ff-u);font-size:15px;min-height:100vh;
+  background-image:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(200,169,110,.07) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 40% at 80% 110%,rgba(79,195,200,.05) 0%,transparent 55%);}
+html.light body{background-image:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(138,94,30,.06) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(30,122,126,.04) 0%,transparent 55%);}
+header{display:flex;align-items:center;gap:14px;padding:18px 28px;border-bottom:1px solid var(--border);
+  background:var(--hbg);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;}
+.logo{font-family:var(--ff-h);font-size:1.1rem;color:var(--gold);letter-spacing:.08em;}
+header h1{font-family:var(--ff-h);font-size:1.45rem;font-weight:600;}
+.badge{font-size:.7rem;font-family:var(--ff-m);background:rgba(200,169,110,.12);color:var(--gold);
+  border:1px solid var(--gold-dim);padding:3px 10px;border-radius:20px;letter-spacing:.12em;}
+.thbtn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;
+  padding:5px 13px;font-size:.78rem;font-family:var(--ff-u);font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.thbtn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.tab-bar{display:flex;overflow-x:auto;gap:4px;padding:10px 20px 0;border-bottom:1px solid var(--border);background:var(--surface);scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex-shrink:0;font-family:var(--ff-u);font-size:.82rem;font-weight:600;letter-spacing:.04em;
+  background:none;border:none;color:var(--muted);cursor:pointer;padding:10px 18px;
+  border-radius:var(--r) var(--r) 0 0;border-bottom:2px solid transparent;white-space:nowrap;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(200,169,110,.06);}
+.subtab-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;}
+.subtab-btn{flex:1;min-width:110px;font-family:var(--ff-u);font-size:.82rem;font-weight:700;
+  letter-spacing:.03em;cursor:pointer;padding:10px 12px;border-radius:var(--r);
+  border:2px solid var(--border);background:var(--surface);color:var(--muted);text-align:center;}
+.subtab-btn:hover{border-color:var(--gold-dim);color:var(--text);}
+.subtab-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,.08);}
+.sticon{display:block;font-size:1.2rem;margin-bottom:2px;}
+.stlabel{display:block;font-size:.82rem;}
+main{padding:28px 24px;max-width:1100px;margin:0 auto;}
+.panel{display:none;}.panel.active{display:block;animation:fi .25s ease;}
+.subpanel{display:none;}.subpanel.active{display:block;animation:fi .2s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.sh{margin-bottom:22px;}.sh h2{font-family:var(--ff-h);font-size:1.9rem;font-weight:600;color:var(--gold);}
+.sh p{color:var(--muted);font-size:.88rem;margin-top:4px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:700px){.g2{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:18px;}
+.ctitle{font-weight:700;font-size:.8rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
+label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.04em;}
+input[type=number],input[type=text],select{width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);font-family:var(--ff-m);font-size:.88rem;padding:8px 12px;border-radius:7px;outline:none;}
+input:focus,select:focus{border-color:var(--gold-dim);}
+input[type=range]{width:100%;accent-color:var(--gold);}
+.rv{font-family:var(--ff-m);color:var(--gold);font-size:.88rem;}
+.fr{margin-bottom:14px;}
+.btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--gold-dim),var(--gold));
+  color:#07070d;font-family:var(--ff-u);font-weight:700;font-size:.85rem;letter-spacing:.06em;
+  border:none;border-radius:8px;padding:10px 22px;cursor:pointer;}
+.btn:hover{opacity:.88;transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.metrics{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0;}
+.metric{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;min-width:90px;flex:1;}
+.mlbl{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.mval{font-family:var(--ff-m);font-size:1.2rem;font-weight:500;color:var(--gold);}
+.mval.hi{color:var(--cyan);}
+.alert{border-radius:8px;padding:12px 16px;font-size:.88rem;margin-top:12px;}
+.as{background:rgba(93,186,138,.1);border:1px solid rgba(93,186,138,.3);color:var(--success);}
+.ai{background:rgba(79,195,200,.1);border:1px solid rgba(79,195,200,.3);color:var(--cyan);}
+.aw{background:rgba(230,133,74,.1);border:1px solid rgba(230,133,74,.3);color:var(--warn);}
+.chart-wrap{height:300px;position:relative;margin-top:10px;}
+.ibox{background:rgba(200,169,110,.06);border-left:3px solid var(--gold-dim);border-radius:0 8px 8px 0;padding:12px 16px;font-size:.85rem;color:var(--text);margin-bottom:16px;}
+.ibox strong{color:var(--gold);}
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:12px;}
+.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;}
+.tbl td{padding:8px 12px;border-bottom:1px solid rgba(42,42,69,.4);font-family:var(--ff-m);text-align:center;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--rh);}
+.tbl tr.hi-row td{background:rgba(200,169,110,.1);color:var(--gold);font-weight:700;}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-wrap:wrap;}
+.seg input[type=radio]{display:none;}
+.seg label{padding:7px 14px;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--muted);}
+.seg input[type=radio]:checked+label{background:var(--gold-dim);color:#fff;}
+.probs-row{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0;}
+.prob-box{flex:1;min-width:130px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:9px;padding:14px 16px;text-align:center;}
+.prob-box .plbl{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.prob-box .pval{font-family:var(--ff-m);font-size:1.4rem;font-weight:700;color:var(--cyan);}
+.prob-box.main .pval{color:var(--gold);font-size:1.6rem;}
+.between-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.between-row label{margin:0;font-size:.82rem;white-space:nowrap;}
+.between-row input{width:80px;flex-shrink:0;}
+footer{text-align:center;padding:32px 20px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);margin-top:20px;}
+footer a{color:var(--gold-dim);text-decoration:none;}
+@media(max-width:500px){header h1{font-size:1.1rem;}main{padding:18px 14px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">HumAIno®</span>
+  <span style="color:var(--border)">│</span>
+  <h1>Probabilidad y Distribuciones</h1>
+  <span class="badge" style="margin-left:auto">v1.0</span>
+  <button class="thbtn" onclick="toggleTheme()"><span id="thi">☀️</span><span id="thl">Claro</span></button>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="swT(0)">📦 Distribuciones Discretas</button>
+  <button class="tab-btn" onclick="swT(1)">〰️ Distribuciones Continuas</button>
+  <button class="tab-btn" onclick="swT(2)">⚡ Potencia Estadística</button>
+</div>
+
+<main>
+
+<!-- ══ P0: DISCRETAS ══ -->
+<section class="panel active" id="p0">
+  <div class="sh"><h2>Distribuciones Discretas</h2>
+    <p>Calcula probabilidades puntuales y acumuladas; visualiza la función de masa de probabilidad</p></div>
+  <div class="subtab-bar">
+    <button class="subtab-btn active" id="sb-bin" onclick="swD('bin')"><span class="sticon">🎯</span><span class="stlabel">Binomial</span></button>
+    <button class="subtab-btn" id="sb-poi" onclick="swD('poi')"><span class="sticon">🔵</span><span class="stlabel">Poisson</span></button>
+    <button class="subtab-btn" id="sb-hyp" onclick="swD('hyp')"><span class="sticon">📦</span><span class="stlabel">Hipergeométrica</span></button>
+    <button class="subtab-btn" id="sb-geo" onclick="swD('geo')"><span class="sticon">🔢</span><span class="stlabel">Geométrica</span></button>
+  </div>
+
+  <!-- BINOMIAL -->
+  <div class="subpanel active" id="d-bin">
+    <div class="ibox"><strong>Binomial B(n, p)</strong> — n ensayos independientes, probabilidad de éxito p constante.<br>
+      <strong>E(X) = np · Var(X) = np(1−p)</strong></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>n (ensayos): <span id="bn-v" class="rv">10</span></label>
+          <input type="range" id="bn" min="1" max="100" value="10" oninput="document.getElementById('bn-v').textContent=this.value;calcBin()"></div>
+        <div class="fr"><label>p (prob. éxito): <span id="bp-v" class="rv">0.50</span></label>
+          <input type="range" id="bp" min="1" max="99" value="50" oninput="document.getElementById('bp-v').textContent=(this.value/100).toFixed(2);calcBin()"></div>
+        <div class="fr"><label>k (valor de interés):</label>
+          <input type="number" id="bk" value="5" min="0" oninput="calcBin()"></div>
+        <div class="between-row">
+          <label>P(a ≤ X ≤ b):</label>
+          <label style="color:var(--gold)">a=</label><input type="number" id="ba" value="3" min="0" style="width:70px" oninput="calcBin()">
+          <label style="color:var(--gold)">b=</label><input type="number" id="bb" value="7" min="0" style="width:70px" oninput="calcBin()">
+          <span id="b-between" class="rv" style="font-size:1rem"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Estadísticos</div>
+        <div class="metrics" id="bin-stats"></div>
+        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+        <div class="probs-row" id="bin-probs"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Función de masa de probabilidad P(X = k)</div>
+      <div class="chart-wrap"><canvas id="bin-chart"></canvas></div>
+    </div>
+    <div class="card" id="bin-tbl-card">
+      <div class="ctitle">Tabla de probabilidades</div>
+      <div style="overflow-x:auto" id="bin-tbl"></div>
+    </div>
+  </div>
+
+  <!-- POISSON -->
+  <div class="subpanel" id="d-poi">
+    <div class="ibox"><strong>Poisson Po(λ)</strong> — número de eventos en un intervalo fijo. λ = tasa promedio.<br>
+      <strong>E(X) = λ · Var(X) = λ · σ = √λ</strong></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>λ (tasa promedio): <span id="pl-v" class="rv">3.0</span></label>
+          <input type="range" id="pl" min="1" max="200" value="30" oninput="document.getElementById('pl-v').textContent=(this.value/10).toFixed(1);calcPoi()"></div>
+        <div class="fr"><label>k (valor de interés):</label>
+          <input type="number" id="pk" value="2" min="0" oninput="calcPoi()"></div>
+        <div class="between-row">
+          <label>P(a ≤ X ≤ b):</label>
+          <label style="color:var(--gold)">a=</label><input type="number" id="pa" value="1" min="0" style="width:70px" oninput="calcPoi()">
+          <label style="color:var(--gold)">b=</label><input type="number" id="pb" value="5" min="0" style="width:70px" oninput="calcPoi()">
+          <span id="p-between" class="rv" style="font-size:1rem"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Estadísticos</div>
+        <div class="metrics" id="poi-stats"></div>
+        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+        <div class="probs-row" id="poi-probs"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Función de masa de probabilidad P(X = k)</div>
+      <div class="chart-wrap"><canvas id="poi-chart"></canvas></div>
+    </div>
+    <div class="card"><div class="ctitle">Tabla de probabilidades</div><div style="overflow-x:auto" id="poi-tbl"></div></div>
+  </div>
+
+  <!-- HIPERGEOMÉTRICA -->
+  <div class="subpanel" id="d-hyp">
+    <div class="ibox"><strong>Hipergeométrica H(N, K, n)</strong> — muestreo sin reemplazo. N=población, K=éxitos en población, n=tamaño de muestra.<br>
+      <strong>E(X) = nK/N · Var(X) = nK(N−K)(N−n) / [N²(N−1)]</strong></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>N (tamaño de la población):</label><input type="number" id="hn" value="50" min="2" oninput="calcHyp()"></div>
+        <div class="fr"><label>K (éxitos en la población):</label><input type="number" id="hK" value="20" min="0" oninput="calcHyp()"></div>
+        <div class="fr"><label>n (tamaño de muestra):</label><input type="number" id="hn2" value="10" min="1" oninput="calcHyp()"></div>
+        <div class="fr"><label>k (éxitos observados en muestra):</label><input type="number" id="hk" value="4" min="0" oninput="calcHyp()"></div>
+        <div class="between-row">
+          <label>P(a ≤ X ≤ b):</label>
+          <label style="color:var(--gold)">a=</label><input type="number" id="ha" value="2" min="0" style="width:70px" oninput="calcHyp()">
+          <label style="color:var(--gold)">b=</label><input type="number" id="hb" value="6" min="0" style="width:70px" oninput="calcHyp()">
+          <span id="h-between" class="rv" style="font-size:1rem"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Estadísticos</div>
+        <div class="metrics" id="hyp-stats"></div>
+        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+        <div class="probs-row" id="hyp-probs"></div>
+      </div>
+    </div>
+    <div class="card"><div class="ctitle">Función de masa de probabilidad</div><div class="chart-wrap"><canvas id="hyp-chart"></canvas></div></div>
+    <div class="card"><div class="ctitle">Tabla de probabilidades</div><div style="overflow-x:auto" id="hyp-tbl"></div></div>
+  </div>
+
+  <!-- GEOMÉTRICA -->
+  <div class="subpanel" id="d-geo">
+    <div class="ibox"><strong>Geométrica Geo(p)</strong> — número de ensayos hasta el primer éxito.<br>
+      <strong>P(X=k) = (1−p)^(k−1) · p · E(X) = 1/p · Var(X) = (1−p)/p²</strong></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>p (prob. éxito): <span id="gp-v" class="rv">0.30</span></label>
+          <input type="range" id="gp" min="1" max="99" value="30" oninput="document.getElementById('gp-v').textContent=(this.value/100).toFixed(2);calcGeo()"></div>
+        <div class="fr"><label>k (número de ensayos, k ≥ 1):</label>
+          <input type="number" id="gk" value="3" min="1" oninput="calcGeo()"></div>
+        <div class="between-row">
+          <label>P(a ≤ X ≤ b):</label>
+          <label style="color:var(--gold)">a=</label><input type="number" id="ga" value="1" min="1" style="width:70px" oninput="calcGeo()">
+          <label style="color:var(--gold)">b=</label><input type="number" id="gb" value="5" min="1" style="width:70px" oninput="calcGeo()">
+          <span id="g-between" class="rv" style="font-size:1rem"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Estadísticos</div>
+        <div class="metrics" id="geo-stats"></div>
+        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+        <div class="probs-row" id="geo-probs"></div>
+      </div>
+    </div>
+    <div class="card"><div class="ctitle">Función de masa de probabilidad</div><div class="chart-wrap"><canvas id="geo-chart"></canvas></div></div>
+    <div class="card"><div class="ctitle">Tabla de probabilidades</div><div style="overflow-x:auto" id="geo-tbl"></div></div>
+  </div>
+</section>
+
+<!-- ══ P1: CONTINUAS ══ -->
+<section class="panel" id="p1">
+  <div class="sh"><h2>Distribuciones Continuas</h2>
+    <p>Calcula áreas bajo la curva y valores críticos para las distribuciones más importantes</p></div>
+  <div class="subtab-bar">
+    <button class="subtab-btn active" id="cb-nor" onclick="swC('nor')"><span class="sticon">🔔</span><span class="stlabel">Normal</span></button>
+    <button class="subtab-btn" id="cb-t"   onclick="swC('t')">  <span class="sticon">📐</span><span class="stlabel">t-Student</span></button>
+    <button class="subtab-btn" id="cb-chi" onclick="swC('chi')"><span class="sticon">χ²</span><span class="stlabel">Chi-cuadrada</span></button>
+    <button class="subtab-btn" id="cb-f"   onclick="swC('f')">  <span class="sticon">F</span><span class="stlabel">F de Fisher</span></button>
+  </div>
+
+  <!-- NORMAL -->
+  <div class="subpanel active" id="c-nor">
+    <div class="ibox"><strong>Normal N(μ, σ²)</strong> — simétrica, unimodal. Z = (X−μ)/σ estandariza a N(0,1).</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>μ (media):</label><input type="number" id="nm" value="0" step="0.1" oninput="calcNor()"></div>
+        <div class="fr"><label>σ (desviación estándar):</label><input type="number" id="ns" value="1" min="0.01" step="0.1" oninput="calcNor()"></div>
+        <div class="fr"><label>Cálculo</label>
+          <div class="seg">
+            <input type="radio" name="nr" id="nr1" value="le" checked onchange="calcNor()"><label for="nr1">P(X ≤ x)</label>
+            <input type="radio" name="nr" id="nr2" value="ge" onchange="calcNor()"><label for="nr2">P(X ≥ x)</label>
+            <input type="radio" name="nr" id="nr3" value="bt" onchange="calcNor()"><label for="nr3">P(a ≤ X ≤ b)</label>
+          </div>
+        </div>
+        <div id="nor-x-row" class="fr"><label>x:</label><input type="number" id="nx" value="1.96" step="0.01" oninput="calcNor()"></div>
+        <div id="nor-ab-row" class="fr" style="display:none">
+          <div style="display:flex;gap:10px">
+            <div style="flex:1"><label>a:</label><input type="number" id="na" value="-1.96" step="0.01" oninput="calcNor()"></div>
+            <div style="flex:1"><label>b:</label><input type="number" id="nb" value="1.96" step="0.01" oninput="calcNor()"></div>
+          </div>
+        </div>
+        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <label>Valor crítico — dado α, encuentra x_α:</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <input type="number" id="nalpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px">
+            <div class="seg">
+              <input type="radio" name="ntail" id="nt1" value="two" checked onchange="calcNorCrit()"><label for="nt1">Bilateral</label>
+              <input type="radio" name="ntail" id="nt2" value="one" onchange="calcNorCrit()"><label for="nt2">Unilateral</label>
+            </div>
+            <span id="nor-crit" class="rv" style="font-size:1rem">z = 1.9600</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Resultado</div>
+        <div class="probs-row" id="nor-probs"></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="nor-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- t-STUDENT -->
+  <div class="subpanel" id="c-t">
+    <div class="ibox"><strong>t-Student t(ν)</strong> — ν = grados de libertad. Más pesada que normal; converge a N(0,1) para ν grande.</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>ν (grados de libertad): <span id="tv-v" class="rv">10</span></label>
+          <input type="range" id="tv" min="1" max="120" value="10" oninput="document.getElementById('tv-v').textContent=this.value;calcT()"></div>
+        <div class="fr"><label>Cálculo</label>
+          <div class="seg">
+            <input type="radio" name="tr" id="tr1" value="le" checked onchange="calcT()"><label for="tr1">P(t ≤ x)</label>
+            <input type="radio" name="tr" id="tr2" value="ge" onchange="calcT()"><label for="tr2">P(t ≥ x)</label>
+            <input type="radio" name="tr" id="tr3" value="bt" onchange="calcT()"><label for="tr3">P(a ≤ t ≤ b)</label>
+          </div>
+        </div>
+        <div id="t-x-row" class="fr"><label>x:</label><input type="number" id="tx" value="2.228" step="0.001" oninput="calcT()"></div>
+        <div id="t-ab-row" class="fr" style="display:none">
+          <div style="display:flex;gap:10px">
+            <div style="flex:1"><label>a:</label><input type="number" id="ta" value="-2.228" step="0.001" oninput="calcT()"></div>
+            <div style="flex:1"><label>b:</label><input type="number" id="tb" value="2.228" step="0.001" oninput="calcT()"></div>
+          </div>
+        </div>
+        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <label>Valor crítico t_α,ν:</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <input type="number" id="talpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px" oninput="calcTCrit()">
+            <div class="seg">
+              <input type="radio" name="ttail" id="tt1" value="two" checked onchange="calcTCrit()"><label for="tt1">Bilateral</label>
+              <input type="radio" name="ttail" id="tt2" value="one" onchange="calcTCrit()"><label for="tt2">Unilateral</label>
+            </div>
+            <span id="t-crit" class="rv" style="font-size:1rem">t = 2.228</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Resultado</div>
+        <div class="probs-row" id="t-probs"></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="t-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHI-CUADRADA -->
+  <div class="subpanel" id="c-chi">
+    <div class="ibox"><strong>Chi-cuadrada χ²(ν)</strong> — asimétrica positiva. Usada en pruebas de varianza, bondad de ajuste e independencia.</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>ν (grados de libertad): <span id="cv-v" class="rv">5</span></label>
+          <input type="range" id="cv" min="1" max="60" value="5" oninput="document.getElementById('cv-v').textContent=this.value;calcChi()"></div>
+        <div class="fr"><label>Cálculo</label>
+          <div class="seg">
+            <input type="radio" name="cr" id="cr1" value="le" checked onchange="calcChi()"><label for="cr1">P(χ² ≤ x)</label>
+            <input type="radio" name="cr" id="cr2" value="ge" onchange="calcChi()"><label for="cr2">P(χ² ≥ x)</label>
+            <input type="radio" name="cr" id="cr3" value="bt" onchange="calcChi()"><label for="cr3">P(a ≤ χ² ≤ b)</label>
+          </div>
+        </div>
+        <div id="chi-x-row" class="fr"><label>x:</label><input type="number" id="cx" value="11.07" step="0.01" min="0" oninput="calcChi()"></div>
+        <div id="chi-ab-row" class="fr" style="display:none">
+          <div style="display:flex;gap:10px">
+            <div style="flex:1"><label>a:</label><input type="number" id="ca" value="1" step="0.01" min="0" oninput="calcChi()"></div>
+            <div style="flex:1"><label>b:</label><input type="number" id="cb" value="12" step="0.01" min="0" oninput="calcChi()"></div>
+          </div>
+        </div>
+        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <label>Valor crítico χ²_α,ν:</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <input type="number" id="calpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px" oninput="calcChiCrit()">
+            <div class="seg">
+              <input type="radio" name="ctail" id="cht1" value="upper" checked onchange="calcChiCrit()"><label for="cht1">Cola derecha</label>
+              <input type="radio" name="ctail" id="cht2" value="lower" onchange="calcChiCrit()"><label for="cht2">Cola izquierda</label>
+            </div>
+            <span id="chi-crit" class="rv" style="font-size:1rem"></span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Resultado</div>
+        <div class="probs-row" id="chi-probs"></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="chi-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- F de Fisher -->
+  <div class="subpanel" id="c-f">
+    <div class="ibox"><strong>F de Fisher F(ν₁, ν₂)</strong> — cociente de varianzas. Usada en ANOVA y comparación de varianzas.</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>ν₁ (gl numerador): <span id="f1-v" class="rv">5</span></label>
+          <input type="range" id="fv1" min="1" max="60" value="5" oninput="document.getElementById('f1-v').textContent=this.value;calcF()"></div>
+        <div class="fr"><label>ν₂ (gl denominador): <span id="f2-v" class="rv">20</span></label>
+          <input type="range" id="fv2" min="1" max="120" value="20" oninput="document.getElementById('f2-v').textContent=this.value;calcF()"></div>
+        <div class="fr"><label>Cálculo</label>
+          <div class="seg">
+            <input type="radio" name="fr" id="fr1" value="le" checked onchange="calcF()"><label for="fr1">P(F ≤ x)</label>
+            <input type="radio" name="fr" id="fr2" value="ge" onchange="calcF()"><label for="fr2">P(F ≥ x)</label>
+          </div>
+        </div>
+        <div class="fr"><label>x:</label><input type="number" id="fx" value="2.71" step="0.01" min="0" oninput="calcF()"></div>
+        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <label>Valor crítico F_α,ν₁,ν₂ (cola derecha):</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <input type="number" id="falpha" value="0.05" min="0.001" max="0.5" step="0.001" style="width:100px" oninput="calcFCrit()">
+            <span id="f-crit" class="rv" style="font-size:1rem"></span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Resultado</div>
+        <div class="probs-row" id="f-probs"></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="f-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ P2: POTENCIA ══ -->
+<section class="panel" id="p2">
+  <div class="sh"><h2>Potencia Estadística</h2>
+    <p>Error tipo II, potencia y curvas para pruebas de una y dos muestras</p></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ctitle">Parámetros</div>
+      <div class="fr"><label>Prueba</label>
+        <div class="seg">
+          <input type="radio" name="pw" id="pw1" value="one" checked onchange="calcPow()"><label for="pw1">Una muestra</label>
+          <input type="radio" name="pw" id="pw2" value="two" onchange="calcPow()"><label for="pw2">Dos muestras</label>
+        </div>
+      </div>
+      <div class="fr"><label>Δ (diferencia a detectar):</label><input type="number" id="pd" value="5" min="0.1" step="0.1" oninput="calcPow()"></div>
+      <div class="fr"><label>σ (desviación estándar):</label><input type="number" id="ps" value="10" min="0.1" step="0.1" oninput="calcPow()"></div>
+      <div class="fr"><label>n (tamaño de muestra por grupo): <span id="pn-v" class="rv">30</span></label>
+        <input type="range" id="pn" min="2" max="200" value="30" oninput="document.getElementById('pn-v').textContent=this.value;calcPow()"></div>
+      <div class="fr"><label>α (nivel de significancia):</label>
+        <select id="pa" onchange="calcPow()">
+          <option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Resultados</div>
+      <div class="metrics" id="pow-stats"></div>
+      <div id="pow-alert"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Curva de Potencia (1−β vs n)</div>
+    <div class="chart-wrap" style="height:320px"><canvas id="pow-chart"></canvas></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div style="max-width:700px;margin:0 auto">
+    <p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
+      Probabilidad y Distribuciones · v1.0</p>
+    <p style="margin-bottom:10px">
+      <span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br>
+      <span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es" target="_blank"
+       style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+              background:rgba(200,169,110,.08);border:1px solid var(--border);
+              border-radius:8px;padding:8px 14px;margin-bottom:12px">
+      <img src="https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png" alt="CC BY-NC-ND 4.0" style="height:22px;border-radius:3px">
+      <span style="font-size:.78rem;color:var(--muted);line-height:1.4">
+        Licencia <strong style="color:var(--gold)">CC BY-NC-ND 4.0</strong> Internacional<br>
+        Uso académico libre · citar al autor · sin modificaciones · sin uso comercial</span>
+    </a>
+    <p style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:8px">
+      Asistencia de IA: <strong>Claude</strong> (Anthropic) vía <strong>HumAIno®</strong><br>
+      <strong>HumAIno®</strong> marca registrada IMPI · Reg. 3019130 · Titular: Lilian Dolores Chel Guerrero · Vigencia: 2036<br>
+      Prohibida modificación, redistribución o uso comercial sin autorización expresa.</p>
+    <p style="font-size:.72rem;color:var(--border)">
+      <a href="https://humaino.com" target="_blank">humaino.com</a> · Mérida, Yucatán, México</p>
+  </div>
+</footer>
+
+<script>
+/* ══ THEME ═══════════════════════════════════════════════════════ */
+let isDark=true;
+function toggleTheme(){
+  isDark=!isDark;
+  document.documentElement.classList.toggle('light',!isDark);
+  document.getElementById('thi').textContent=isDark?'☀️':'🌙';
+  document.getElementById('thl').textContent=isDark?'Claro':'Oscuro';
+  localStorage.setItem('theme-prob',isDark?'dark':'light');
+  refreshAll();
+}
+const cg=()=>isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)';
+const ct=()=>isDark?'#666880':'#9a9080';
+const chartOpts=(title)=>({responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},title:{display:!!title,text:title,color:'#c8a96e',font:{size:12}}},
+  scales:{x:{ticks:{color:ct(),font:{size:11}},grid:{color:cg()}},y:{ticks:{color:ct(),font:{size:11}},grid:{color:cg()},beginAtZero:true}}});
+
+/* ══ NAVIGATION ══════════════════════════════════════════════════ */
+const panels=document.querySelectorAll('.panel'),tabBtns=document.querySelectorAll('.tab-btn');
+function swT(i){panels.forEach((p,j)=>p.classList.toggle('active',j===i));tabBtns.forEach((b,j)=>b.classList.toggle('active',j===i));}
+function swD(w){['bin','poi','hyp','geo'].forEach(id=>{
+  document.getElementById('d-'+id).classList.toggle('active',id===w);
+  document.getElementById('sb-'+id).classList.toggle('active',id===w);
+});}
+function swC(w){['nor','t','chi','f'].forEach(id=>{
+  document.getElementById('c-'+id).classList.toggle('active',id===w);
+  document.getElementById('cb-'+id).classList.toggle('active',id===w);
+});}
+
+/* ══ HELPERS ═════════════════════════════════════════════════════ */
+const f4=v=>isNaN(v)||!isFinite(v)?'—':v.toFixed(4);
+const pct=v=>(v*100).toFixed(2)+'%';
+function mH(arr){return`<div class="metrics">${arr.map(d=>`<div class="metric"><div class="mlbl">${d.l}</div><div class="mval${d.c?' '+d.c:''}">${d.v}</div></div>`).join('')}</div>`;}
+function probBoxes(items){return`<div class="probs-row">${items.map(d=>`<div class="prob-box${d.main?' main':''}"><div class="plbl">${d.l}</div><div class="pval">${d.v}</div></div>`).join('')}</div>`;}
+
+/* ══ MATH ════════════════════════════════════════════════════════ */
+function logGamma(n){return jStat.gammaln(n);}
+function logComb(n,k){if(k<0||k>n)return -Infinity;if(k===0||k===n)return 0;return logGamma(n+1)-logGamma(k+1)-logGamma(n-k+1);}
+function hypgeomPMF(k,N,K,n){
+  const lo=Math.max(0,n+K-N),hi=Math.min(K,n);
+  if(k<lo||k>hi)return 0;
+  return Math.exp(logComb(K,k)+logComb(N-K,n-k)-logComb(N,n));
+}
+function hypgeomCDF(k,N,K,n){let s=0;for(let i=0;i<=k;i++)s+=hypgeomPMF(i,N,K,n);return Math.min(s,1);}
+function geomPMF(k,p){return k<1?0:Math.pow(1-p,k-1)*p;}
+function geomCDF(k,p){return k<1?0:1-Math.pow(1-p,k);}
+const normalPPF=p=>jStat.normal.inv(p,0,1);
+const zp=p=>jStat.normal.inv(p,0,1);
+
+/* ══ DISCRETE CHART ══════════════════════════════════════════════ */
+let discCharts={bin:null,poi:null,hyp:null,geo:null};
+function drawDiscChart(id,labels,probs,hiIdx){
+  const el=document.getElementById(id+'-chart');
+  if(!el)return;
+  if(discCharts[id])discCharts[id].destroy();
+  const colors=probs.map((_,i)=>i===hiIdx?'rgba(200,169,110,.95)':'rgba(79,195,200,.55)');
+  const borders=probs.map((_,i)=>i===hiIdx?'#c8a96e':'rgba(79,195,200,.9)');
+  discCharts[id]=new Chart(el.getContext('2d'),{
+    type:'bar',
+    data:{labels:labels.map(String),datasets:[{data:probs,backgroundColor:colors,borderColor:borders,borderWidth:1.5}]},
+    options:{...chartOpts('P(X = k)'),scales:{x:{ticks:{color:ct(),font:{size:10}},grid:{color:cg()}},y:{ticks:{color:ct()},grid:{color:cg()},beginAtZero:true}}}
+  });
+}
+
+/* ══ DISCRETE TABLE ══════════════════════════════════════════════ */
+function discTable(id,ks,pmf,cdf,hiK){
+  const rows=ks.map(k=>{
+    const p=pmf(k),c=cdf(k);
+    const hi=k===hiK?' class="hi-row"':'';
+    return `<tr${hi}><td>${k}</td><td>${f4(p)}</td><td>${f4(c)}</td><td>${f4(1-cdf(k-1))}</td></tr>`;
+  }).join('');
+  document.getElementById(id+'-tbl').innerHTML=`<table class="tbl"><thead><tr><th>k</th><th>P(X=k)</th><th>P(X≤k)</th><th>P(X≥k)</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+/* ══ BINOMIAL ════════════════════════════════════════════════════ */
+function calcBin(){
+  const n=+document.getElementById('bn').value;
+  const p=document.getElementById('bp').value/100;
+  const k=Math.max(0,Math.min(n,+document.getElementById('bk').value||0));
+  const a=Math.max(0,+document.getElementById('ba').value||0);
+  const b=Math.min(n,+document.getElementById('bb').value||0);
+  const pmf=k=>jStat.binomial.pdf(k,n,p);
+  const cdf=k=>k<0?0:jStat.binomial.cdf(k,n,p);
+  const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
+  const mu=n*p,vr=n*p*(1-p);
+  // Between
+  const bet=a<=b?cdf(b)-cdf(a-1):0;
+  document.getElementById('b-between').textContent=`= ${f4(bet)}`;
+  document.getElementById('bin-stats').innerHTML=mH([
+    {l:'E(X) = np',v:(mu).toFixed(4)},{l:'Var(X)',v:vr.toFixed(4)},{l:'σ',v:Math.sqrt(vr).toFixed(4)},
+    {l:'Moda',v:Math.floor((n+1)*p)+''}]);
+  document.getElementById('bin-probs').innerHTML=probBoxes([
+    {l:'P(X = k)',v:f4(pk),main:true},{l:'P(X ≤ k)',v:f4(le)},{l:'P(X ≥ k)',v:f4(ge)}]);
+  const maxK=n,ks=Array.from({length:maxK+1},(_,i)=>i);
+  drawDiscChart('bin',ks,ks.map(pmf),k);
+  discTable('bin',ks,pmf,cdf,k);
+}
+
+/* ══ POISSON ═════════════════════════════════════════════════════ */
+function calcPoi(){
+  const lam=document.getElementById('pl').value/10;
+  const k=Math.max(0,+document.getElementById('pk').value||0);
+  const a=Math.max(0,+document.getElementById('pa').value||0);
+  const b=Math.max(0,+document.getElementById('pb').value||0);
+  const pmf=k=>jStat.poisson.pdf(k,lam);
+  const cdf=k=>k<0?0:jStat.poisson.cdf(k,lam);
+  const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
+  const bet=a<=b?cdf(b)-cdf(a-1):0;
+  document.getElementById('p-between').textContent=`= ${f4(bet)}`;
+  document.getElementById('poi-stats').innerHTML=mH([
+    {l:'λ (E(X) y Var)',v:lam.toFixed(2)},{l:'σ = √λ',v:Math.sqrt(lam).toFixed(4)},
+    {l:'Moda',v:Math.floor(lam)+''}]);
+  document.getElementById('poi-probs').innerHTML=probBoxes([
+    {l:'P(X = k)',v:f4(pk),main:true},{l:'P(X ≤ k)',v:f4(le)},{l:'P(X ≥ k)',v:f4(ge)}]);
+  const maxK=Math.max(k+5,Math.ceil(lam+4*Math.sqrt(lam)+5));
+  const ks=Array.from({length:maxK+1},(_,i)=>i);
+  drawDiscChart('poi',ks,ks.map(pmf),k);
+  discTable('poi',ks.slice(0,Math.min(maxK+1,30)),pmf,cdf,k);
+}
+
+/* ══ HIPERGEOMÉTRICA ═════════════════════════════════════════════ */
+function calcHyp(){
+  const N=+document.getElementById('hn').value||50;
+  const K=Math.min(+document.getElementById('hK').value||20,N);
+  const n=Math.min(+document.getElementById('hn2').value||10,N);
+  const kRaw=+document.getElementById('hk').value||0;
+  const lo=Math.max(0,n+K-N),hi=Math.min(K,n);
+  const k=Math.max(lo,Math.min(hi,kRaw));
+  const a=Math.max(lo,+document.getElementById('ha').value||lo);
+  const b=Math.min(hi,+document.getElementById('hb').value||hi);
+  const pmf=kk=>hypgeomPMF(kk,N,K,n);
+  const cdf=kk=>hypgeomCDF(kk,N,K,n);
+  const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
+  const bet=a<=b?cdf(b)-cdf(a-1):0;
+  document.getElementById('h-between').textContent=`= ${f4(bet)}`;
+  const mu=n*K/N,vr=n*(K/N)*(1-K/N)*(N-n)/(N-1);
+  document.getElementById('hyp-stats').innerHTML=mH([
+    {l:'E(X) = nK/N',v:mu.toFixed(4)},{l:'Var(X)',v:vr.toFixed(4)},{l:'σ',v:Math.sqrt(vr).toFixed(4)},
+    {l:'Rango',v:`[${lo}, ${hi}]`}]);
+  document.getElementById('hyp-probs').innerHTML=probBoxes([
+    {l:'P(X = k)',v:f4(pk),main:true},{l:'P(X ≤ k)',v:f4(le)},{l:'P(X ≥ k)',v:f4(ge)}]);
+  const ks=Array.from({length:hi-lo+1},(_,i)=>i+lo);
+  drawDiscChart('hyp',ks,ks.map(pmf),ks.indexOf(k));
+  discTable('hyp',ks,pmf,cdf,k);
+}
+
+/* ══ GEOMÉTRICA ══════════════════════════════════════════════════ */
+function calcGeo(){
+  const p=document.getElementById('gp').value/100;
+  const k=Math.max(1,+document.getElementById('gk').value||3);
+  const a=Math.max(1,+document.getElementById('ga').value||1);
+  const b=Math.max(1,+document.getElementById('gb').value||5);
+  const pmf=kk=>geomPMF(kk,p);
+  const cdf=kk=>geomCDF(kk,p);
+  const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
+  const bet=a<=b?cdf(b)-cdf(a-1):0;
+  document.getElementById('g-between').textContent=`= ${f4(bet)}`;
+  const mu=1/p,vr=(1-p)/p/p;
+  document.getElementById('geo-stats').innerHTML=mH([
+    {l:'E(X) = 1/p',v:mu.toFixed(4)},{l:'Var(X)',v:vr.toFixed(4)},{l:'σ',v:Math.sqrt(vr).toFixed(4)},
+    {l:'P(X=1)',v:p.toFixed(4)}]);
+  document.getElementById('geo-probs').innerHTML=probBoxes([
+    {l:'P(X = k)',v:f4(pk),main:true},{l:'P(X ≤ k)',v:f4(le)},{l:'P(X ≥ k)',v:f4(ge)}]);
+  const maxK=Math.max(k+5,Math.ceil(mu+4*Math.sqrt(vr)));
+  const ks=Array.from({length:Math.min(maxK,40)},(_,i)=>i+1);
+  drawDiscChart('geo',ks,ks.map(pmf),k-1);
+  discTable('geo',ks.slice(0,20),pmf,cdf,k);
+}
+
+/* ══ CONTINUOUS CHART ════════════════════════════════════════════ */
+let contCharts={nor:null,t:null,chi:null,f:null};
+function drawContChart(id,xs,ys,fillLo,fillHi,yMax){
+  const el=document.getElementById(id+'-chart');if(!el)return;
+  if(contCharts[id])contCharts[id].destroy();
+  const fillData=xs.map((x,i)=>(x>=fillLo&&x<=fillHi)?ys[i]:null);
+  contCharts[id]=new Chart(el.getContext('2d'),{
+    data:{datasets:[
+      {type:'line',data:ys,borderColor:'#c8a96e',borderWidth:2.5,pointRadius:0,fill:false,tension:0.3},
+      {type:'line',data:fillData,borderColor:'rgba(79,195,200,.6)',borderWidth:1,
+       backgroundColor:'rgba(79,195,200,.25)',fill:'origin',pointRadius:0,tension:0.3,spanGaps:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{type:'category',labels:xs.map(x=>x.toFixed(2)),ticks:{color:ct(),maxTicksLimit:8,font:{size:10}},grid:{color:cg()}},
+        y:{ticks:{color:ct(),font:{size:10}},grid:{color:cg()},beginAtZero:true,max:yMax?yMax*1.1:undefined}
+      }}
+  });
+}
+function xRange(lo,hi,n=120){return Array.from({length:n},(_,i)=>lo+(hi-lo)*i/(n-1));}
+
+/* ══ NORMAL ══════════════════════════════════════════════════════ */
+function calcNor(){
+  const mu=+document.getElementById('nm').value||0;
+  const sg=Math.max(0.01,+document.getElementById('ns').value||1);
+  const mode=document.querySelector('input[name="nr"]:checked').value;
+  const xEl=document.getElementById('nor-x-row'),abEl=document.getElementById('nor-ab-row');
+  xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
+  const x=+document.getElementById('nx').value||0;
+  const a_=+document.getElementById('na').value||-1.96;
+  const b_=+document.getElementById('nb').value||1.96;
+  const CDF=v=>jStat.normal.cdf(v,mu,sg);
+  const PDF=v=>jStat.normal.pdf(v,mu,sg);
+  let prob,lo,hi,label;
+  if(mode==='le'){prob=CDF(x);lo=mu-4*sg;hi=x;label=`P(X ≤ ${x.toFixed(2)})`;}
+  else if(mode==='ge'){prob=1-CDF(x);lo=x;hi=mu+4*sg;label=`P(X ≥ ${x.toFixed(2)})`;}
+  else{prob=CDF(b_)-CDF(a_);lo=a_;hi=b_;label=`P(${a_.toFixed(2)} ≤ X ≤ ${b_.toFixed(2)})`;}
+  document.getElementById('nor-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
+  const xs=xRange(mu-4*sg,mu+4*sg);
+  drawContChart('nor',xs,xs.map(PDF),lo,hi);
+  calcNorCrit();
+}
+function calcNorCrit(){
+  const a=+document.getElementById('nalpha').value||0.05;
+  const tail=document.querySelector('input[name="ntail"]:checked').value;
+  const z=tail==='two'?normalPPF(1-a/2):normalPPF(1-a);
+  document.getElementById('nor-crit').textContent=`z = ${z.toFixed(4)}`;
+}
+
+/* ══ t-STUDENT ═══════════════════════════════════════════════════ */
+function calcT(){
+  const df=+document.getElementById('tv').value||10;
+  const mode=document.querySelector('input[name="tr"]:checked').value;
+  const xEl=document.getElementById('t-x-row'),abEl=document.getElementById('t-ab-row');
+  xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
+  const x=+document.getElementById('tx').value||0;
+  const a_=+document.getElementById('ta').value||-2;
+  const b_=+document.getElementById('tb').value||2;
+  const CDF=v=>jStat.studentt.cdf(v,df);
+  const PDF=v=>jStat.studentt.pdf(v,df);
+  const rng=Math.max(4,jStat.studentt.inv(0.9995,df));
+  let prob,lo,hi,label;
+  if(mode==='le'){prob=CDF(x);lo=-rng;hi=x;label=`P(t ≤ ${x.toFixed(3)})`;}
+  else if(mode==='ge'){prob=1-CDF(x);lo=x;hi=rng;label=`P(t ≥ ${x.toFixed(3)})`;}
+  else{prob=CDF(b_)-CDF(a_);lo=a_;hi=b_;label=`P(${a_.toFixed(3)} ≤ t ≤ ${b_.toFixed(3)})`;}
+  document.getElementById('t-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
+  const xs=xRange(-rng,rng);
+  drawContChart('t',xs,xs.map(PDF),lo,hi,PDF(0)*1.05);
+  calcTCrit();
+}
+function calcTCrit(){
+  const df=+document.getElementById('tv').value||10;
+  const a=+document.getElementById('talpha').value||0.05;
+  const tail=document.querySelector('input[name="ttail"]:checked').value;
+  const t=tail==='two'?jStat.studentt.inv(1-a/2,df):jStat.studentt.inv(1-a,df);
+  document.getElementById('t-crit').textContent=`t = ${t.toFixed(4)}`;
+}
+
+/* ══ CHI-CUADRADA ════════════════════════════════════════════════ */
+function calcChi(){
+  const df=+document.getElementById('cv').value||5;
+  const mode=document.querySelector('input[name="cr"]:checked').value;
+  const xEl=document.getElementById('chi-x-row'),abEl=document.getElementById('chi-ab-row');
+  xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
+  const x=Math.max(0,+document.getElementById('cx').value||0);
+  const a_=Math.max(0,+document.getElementById('ca').value||0);
+  const b_=Math.max(a_,+document.getElementById('cb').value||5);
+  const CDF=v=>v<=0?0:jStat.chisquare.cdf(v,df);
+  const PDF=v=>v<=0?0:jStat.chisquare.pdf(v,df);
+  const hi=Math.max(x,b_,df*3+10);
+  let prob,lo,hiF,label;
+  if(mode==='le'){prob=CDF(x);lo=0;hiF=x;label=`P(χ² ≤ ${x.toFixed(3)})`;}
+  else if(mode==='ge'){prob=1-CDF(x);lo=x;hiF=hi;label=`P(χ² ≥ ${x.toFixed(3)})`;}
+  else{prob=CDF(b_)-CDF(a_);lo=a_;hiF=b_;label=`P(${a_.toFixed(2)} ≤ χ² ≤ ${b_.toFixed(2)})`;}
+  document.getElementById('chi-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
+  const xs=xRange(0.01,hi);
+  drawContChart('chi',xs,xs.map(PDF),lo,hiF);
+  calcChiCrit();
+}
+function calcChiCrit(){
+  const df=+document.getElementById('cv').value||5;
+  const a=+document.getElementById('calpha').value||0.05;
+  const tail=document.querySelector('input[name="ctail"]:checked').value;
+  const c=tail==='upper'?jStat.chisquare.inv(1-a,df):jStat.chisquare.inv(a,df);
+  document.getElementById('chi-crit').textContent=`χ² = ${c.toFixed(4)}`;
+}
+
+/* ══ F DE FISHER ═════════════════════════════════════════════════ */
+function calcF(){
+  const df1=+document.getElementById('fv1').value||5;
+  const df2=+document.getElementById('fv2').value||20;
+  const mode=document.querySelector('input[name="fr"]:checked').value;
+  const x=Math.max(0,+document.getElementById('fx').value||0);
+  const CDF=v=>v<=0?0:jStat.centralF.cdf(v,df1,df2);
+  const PDF=v=>v<=0?0:jStat.centralF.pdf(v,df1,df2);
+  const hiX=Math.max(x+2,jStat.centralF.inv(0.999,df1,df2));
+  let prob,lo,hiF,label;
+  if(mode==='le'){prob=CDF(x);lo=0;hiF=x;label=`P(F ≤ ${x.toFixed(3)})`;}
+  else{prob=1-CDF(x);lo=x;hiF=hiX;label=`P(F ≥ ${x.toFixed(3)})`;}
+  document.getElementById('f-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
+  const xs=xRange(0.01,hiX);
+  drawContChart('f',xs,xs.map(PDF),lo,hiF);
+  calcFCrit();
+}
+function calcFCrit(){
+  const df1=+document.getElementById('fv1').value||5;
+  const df2=+document.getElementById('fv2').value||20;
+  const a=+document.getElementById('falpha').value||0.05;
+  const c=jStat.centralF.inv(1-a,df1,df2);
+  document.getElementById('f-crit').textContent=`F = ${c.toFixed(4)}`;
+}
+
+/* ══ POTENCIA ════════════════════════════════════════════════════ */
+let powChart=null;
+function calcPow(){
+  const type=document.querySelector('input[name="pw"]:checked').value;
+  const delta=+document.getElementById('pd').value||5;
+  const sigma=+document.getElementById('ps').value||10;
+  const n=+document.getElementById('pn').value||30;
+  const alpha=+document.getElementById('pa').value||0.05;
+  const d=delta/sigma;
+  const za=zp(1-alpha/2);
+  function power(n_){
+    const ncp=type==='two'?d*Math.sqrt(n_/2):d*Math.sqrt(n_);
+    return 1-jStat.normal.cdf(za-ncp,0,1);
+  }
+  const pow=power(n),beta=1-pow;
+  document.getElementById('pow-stats').innerHTML=mH([
+    {l:'d de Cohen',v:d.toFixed(3)},{l:'Potencia (1−β)',v:pct(pow),c:'hi'},
+    {l:'β (Error II)',v:pct(beta)},{l:'n por grupo',v:n+''}]);
+  let alertCls='ai',alertMsg=`Potencia de ${pct(pow)} con n = ${n} por grupo.`;
+  if(pow<0.5){alertCls='aw';alertMsg='⚠️ Potencia baja — considera aumentar n o el tamaño del efecto.';}
+  else if(pow>=0.8){alertCls='as';alertMsg=`✅ ${alertMsg} Potencia adecuada (≥ 80%).`;}
+  document.getElementById('pow-alert').innerHTML=`<div class="alert ${alertCls}">${alertMsg}</div>`;
+  // Power curve
+  const ns=Array.from({length:99},(_,i)=>i+2);
+  const pows=ns.map(power);
+  if(powChart)powChart.destroy();
+  powChart=new Chart(document.getElementById('pow-chart').getContext('2d'),{
+    type:'line',
+    data:{labels:ns.map(String),datasets:[
+      {data:pows,borderColor:'#4fc3c8',borderWidth:2.5,pointRadius:0,fill:false,tension:0.4},
+      {data:ns.map(()=>0.8),borderColor:'rgba(200,169,110,.5)',borderWidth:1.5,
+       pointRadius:0,fill:false,borderDash:[6,4]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        annotation:{annotations:{line:{type:'line',xMin:n-2,xMax:n-2,borderColor:'#c8a96e',borderWidth:2}}}},
+      scales:{x:{ticks:{color:ct(),maxTicksLimit:10,font:{size:10}},grid:{color:cg()},title:{display:true,text:'n por grupo',color:ct()}},
+              y:{ticks:{color:ct(),font:{size:10}},grid:{color:cg()},min:0,max:1,title:{display:true,text:'Potencia (1−β)',color:ct()}}}}
+  });
+}
+
+/* ══ REFRESH ALL ═════════════════════════════════════════════════ */
+function refreshAll(){calcBin();calcPoi();calcHyp();calcGeo();calcNor();calcT();calcChi();calcF();calcPow();}
+
+/* ══ INIT ════════════════════════════════════════════════════════ */
+calcBin();calcPoi();calcHyp();calcGeo();
+calcNor();calcT();calcChi();calcF();
+calcPow();
+(function(){const s=localStorage.getItem('theme-prob');if(s==='light')toggleTheme();})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(r=>console.log('SW:',r.scope))
+      .catch(e=>console.warn('SW err:',e));
+  });
+}
+</script>
+</body>
+</html>
