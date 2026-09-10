@@ -1,4 +1,4 @@
-/* HumAIno® · Probabilidad y Distribuciones · v1.2 augmentation */
+/* HumAIno® · Probabilidad y Distribuciones · v1.2.1 augmentation */
 (()=>{
   const p1=document.getElementById('p1');
   if(!p1 || document.getElementById('c-uni')) return;
@@ -34,11 +34,11 @@
   </div>
 
   <div class="subpanel" id="c-exp">
-    <div class="ibox"><strong>Exponencial Exp(λ)</strong> — modela tiempos de espera entre eventos de un proceso de Poisson. f(x)=λe<sup>−λx</sup>, x≥0.</div>
+    <div class="ibox"><strong>Exponencial Exp(β)</strong> — modela tiempos de espera entre eventos. β es el parámetro de escala y coincide con el tiempo medio de espera. Es equivalente a usar la tasa λ=1/β.<br><strong>f(x)=(1/β)e<sup>−x/β</sup>, x≥0 · E(X)=β · Var(X)=β²</strong></div>
     <div class="g2">
       <div class="card">
         <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>λ (tasa):</label><input type="number" id="el" value="0.5" min="0.0001" step="0.05" oninput="calcExp()"></div>
+        <div class="fr"><label>β (escala / tiempo medio):</label><input type="number" id="ebeta" value="2" min="0.0001" step="0.1" oninput="calcExp()"></div>
         <div class="fr"><label>Cálculo</label><div class="seg">
           <input type="radio" name="er" id="er1" value="le" checked onchange="calcExp()"><label for="er1">P(X ≤ x)</label>
           <input type="radio" name="er" id="er2" value="ge" onchange="calcExp()"><label for="er2">P(X ≥ x)</label>
@@ -81,22 +81,22 @@
   };
 
   window.calcExp=function(){
-    const la=Math.max(0.0001,+document.getElementById('el').value||0.5),mode=document.querySelector('input[name="er"]:checked').value;
+    const beta=Math.max(0.0001,+document.getElementById('ebeta').value||2),mode=document.querySelector('input[name="er"]:checked').value;
     document.getElementById('exp-xr').style.display=mode==='bt'?'none':'';document.getElementById('exp-abr').style.display=mode==='bt'?'':'none';
     const x=Math.max(0,+document.getElementById('ex').value||0),a=Math.max(0,+document.getElementById('ea').value||0),b=Math.max(0,+document.getElementById('eb').value||0);
-    const CDF=v=>v<=0?0:1-Math.exp(-la*v),PDF=v=>v<0?0:la*Math.exp(-la*v);
-    let prob,lo,hi,lbl;const hiX=Math.max(x,a,b,-Math.log(0.001)/la);
+    const CDF=v=>v<=0?0:1-Math.exp(-v/beta),PDF=v=>v<0?0:(1/beta)*Math.exp(-v/beta);
+    let prob,lo,hi,lbl;const hiX=Math.max(x*1.15,a*1.15,b*1.15,-Math.log(0.001)*beta);
     if(mode==='le'){prob=CDF(x);lo=0;hi=x;lbl=`P(X ≤ ${x.toFixed(2)})`;}
     else if(mode==='ge'){prob=1-CDF(x);lo=x;hi=hiX;lbl=`P(X ≥ ${x.toFixed(2)})`;}
     else{const a1=Math.min(a,b),b1=Math.max(a,b);prob=CDF(b1)-CDF(a1);lo=a1;hi=b1;lbl=`P(${a1.toFixed(2)} ≤ X ≤ ${b1.toFixed(2)})`;}
-    document.getElementById('exp-stats').innerHTML=mH([{l:'E(X)=1/λ',v:(1/la).toFixed(4)},{l:'Var(X)=1/λ²',v:(1/la**2).toFixed(4)},{l:'σ',v:(1/la).toFixed(4)},{l:'Mediana',v:(Math.log(2)/la).toFixed(4)}]);
+    document.getElementById('exp-stats').innerHTML=mH([{l:'E(X)=β',v:beta.toFixed(4)},{l:'Var(X)=β²',v:(beta**2).toFixed(4)},{l:'σ=β',v:beta.toFixed(4)},{l:'Mediana',v:(beta*Math.log(2)).toFixed(4)}]);
     document.getElementById('exp-probs').innerHTML=pBxC(lbl,prob);const xs=xR(0,hiX);drawCC('exp',xs,xs.map(PDF),lo,hi);
-    const p=Math.min(0.999999,Math.max(0,+document.getElementById('ep').value||0));document.getElementById('exp-q').textContent=`xₚ = ${(-Math.log(1-p)/la).toFixed(4)}`;
+    const p=Math.min(0.999999,Math.max(0,+document.getElementById('ep').value||0));document.getElementById('exp-q').textContent=`xₚ = ${(-beta*Math.log(1-p)).toFixed(4)}`;
   };
 
   const oldRefresh=window.refreshCharts;
   window.refreshCharts=function(){oldRefresh();calcUni();calcExp();};
-  document.querySelector('.badge').textContent='v1.2';
-  document.querySelectorAll('footer p').forEach(p=>{if(p.textContent.includes('Probabilidad y Distribuciones · v1.1'))p.innerHTML=p.innerHTML.replace('v1.1','v1.2');});
+  document.querySelector('.badge').textContent='v1.2.1';
+  document.querySelectorAll('footer p').forEach(p=>{if(p.textContent.includes('Probabilidad y Distribuciones · v1.1'))p.innerHTML=p.innerHTML.replace('v1.1','v1.2.1');});
   calcUni();calcExp();
 })();
