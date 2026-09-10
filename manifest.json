@@ -1,9 +1,9 @@
 {
   "name": "Probabilidad y Distribuciones · HumAIno®",
   "short_name": "HIA Prob",
-  "description": "Distribuciones discretas y continuas, potencia estadística",
-  "start_url": "/probabilidad/",
-  "scope": "/probabilidad/",
+  "description": "Distribuciones discretas y continuas, potencia estadística y tablas interactivas",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#07070d",
