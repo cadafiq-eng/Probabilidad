@@ -1,6 +1,6 @@
 /* HumAIno® · Probabilidad y Distribuciones · SW v1.2.1 */
 const CACHE='hia-prob-v1.2.1';
-const LOCAL=['./','./index.html','./legacy.html','./augment-v12.js','./manifest.json','./icon-192.png','./icon-512.png'];
+const LOCAL=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 const REMOTE=['https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.6/jstat.min.js','https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js','https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap'];
 self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(LOCAL);await Promise.allSettled(REMOTE.map(u=>c.add(u)));await self.skipWaiting();})()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})()));
