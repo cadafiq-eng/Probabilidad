@@ -112,9 +112,18 @@ input[type=range]{width:100%;accent-color:var(--gold);}
 .between-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
 .between-row label{margin:0;font-size:.82rem;white-space:nowrap;}
 .between-row input{width:80px;flex-shrink:0;}
+.formula{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.02rem;line-height:1.65;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin:10px 0;overflow-x:auto;}
+.modebar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.modebtn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:7px;
+  padding:7px 13px;font-family:var(--ff-u);font-weight:700;cursor:pointer;}
+.modebtn.active{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,.08);}
+.guided{border-top:1px solid var(--border);margin-top:15px;padding-top:15px;}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.result-line{font-family:var(--ff-m);color:var(--cyan);font-size:.9rem;line-height:1.7;}
 footer{text-align:center;padding:32px 20px;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);margin-top:20px;}
 footer a{color:var(--gold-dim);text-decoration:none;}
-@media(max-width:500px){header h1{font-size:1.1rem;}main{padding:18px 14px;}}
+@media(max-width:500px){header{padding:14px 12px;gap:8px;flex-wrap:wrap}header h1{font-size:1.1rem;}.badge{display:none}main{padding:18px 14px;}.card{padding:16px 14px}.formula{font-size:.92rem}.scroll-x .tbl{min-width:560px}}
 </style>
 </head>
 <body>
@@ -123,7 +132,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
   <span class="logo">HumAIno®</span>
   <span style="color:var(--border)">│</span>
   <h1>Probabilidad y Distribuciones</h1>
-  <span class="badge" style="margin-left:auto">v1.0</span>
+  <span class="badge" style="margin-left:auto">v1.3</span>
   <button class="thbtn" onclick="toggleTheme()"><span id="thi">☀️</span><span id="thl">Claro</span></button>
 </header>
 
@@ -131,6 +140,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
   <button class="tab-btn active" onclick="swT(0)">📦 Distribuciones Discretas</button>
   <button class="tab-btn" onclick="swT(1)">〰️ Distribuciones Continuas</button>
   <button class="tab-btn" onclick="swT(2)">⚡ Potencia Estadística</button>
+  <button class="tab-btn" onclick="swT(3)">🧭 Inferencia Estadística</button>
 </div>
 
 <main>
@@ -283,6 +293,8 @@ footer a{color:var(--gold-dim);text-decoration:none;}
     <button class="subtab-btn" id="cb-t"   onclick="swC('t')">  <span class="sticon">📐</span><span class="stlabel">t-Student</span></button>
     <button class="subtab-btn" id="cb-chi" onclick="swC('chi')"><span class="sticon">χ²</span><span class="stlabel">Chi-cuadrada</span></button>
     <button class="subtab-btn" id="cb-f"   onclick="swC('f')">  <span class="sticon">F</span><span class="stlabel">F de Fisher</span></button>
+    <button class="subtab-btn" id="cb-uni" onclick="swC('uni')"><span class="sticon">▭</span><span class="stlabel">Uniforme</span></button>
+    <button class="subtab-btn" id="cb-exp" onclick="swC('exp')"><span class="sticon">📉</span><span class="stlabel">Exponencial</span></button>
   </div>
 
   <!-- NORMAL -->
@@ -322,6 +334,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
       <div class="card">
         <div class="ctitle">Resultado</div>
         <div class="probs-row" id="nor-probs"></div>
+        <div class="ibox" id="nor-std"></div>
         <div class="chart-wrap" style="height:260px"><canvas id="nor-chart"></canvas></div>
       </div>
     </div>
@@ -443,6 +456,44 @@ footer a{color:var(--gold-dim);text-decoration:none;}
       </div>
     </div>
   </div>
+
+  <!-- UNIFORME -->
+  <div class="subpanel" id="c-uni">
+    <div class="ibox"><strong>Uniforme U(a,b)</strong> — todos los valores del intervalo tienen la misma densidad. Su estandarización produce media 0 y varianza 1, pero <strong>no</strong> una normal estándar.</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="g2"><div class="fr"><label>a (mínimo)</label><input type="number" id="ua" value="0" step="0.1" oninput="calcUni()"></div><div class="fr"><label>b (máximo)</label><input type="number" id="ub" value="10" step="0.1" oninput="calcUni()"></div></div>
+        <div class="fr"><label>Cálculo</label><div class="seg">
+          <input type="radio" name="ur" id="ur1" value="le" checked onchange="calcUni()"><label for="ur1">P(X ≤ x)</label>
+          <input type="radio" name="ur" id="ur2" value="ge" onchange="calcUni()"><label for="ur2">P(X ≥ x)</label>
+          <input type="radio" name="ur" id="ur3" value="bt" onchange="calcUni()"><label for="ur3">P(c ≤ X ≤ d)</label>
+        </div></div>
+        <div id="uni-x-row" class="fr"><label>x</label><input type="number" id="ux" value="6" step="0.1" oninput="calcUni()"></div>
+        <div id="uni-cd-row" class="g2" style="display:none"><div class="fr"><label>c</label><input type="number" id="uc" value="2" step="0.1" oninput="calcUni()"></div><div class="fr"><label>d</label><input type="number" id="ud" value="7" step="0.1" oninput="calcUni()"></div></div>
+      </div>
+      <div class="card"><div class="ctitle">Resultado y estandarización</div><div id="uni-stats"></div><div id="uni-probs"></div><div id="uni-std" class="formula"></div><div class="chart-wrap" style="height:250px"><canvas id="uni-chart"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- EXPONENCIAL -->
+  <div class="subpanel" id="c-exp">
+    <div class="ibox"><strong>Exponencial Exp(λ)</strong> — modela tiempos de espera. Si X ~ Exp(λ), entonces Y = λX ~ Exp(1); esta es su transformación canónica.</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>λ (tasa)</label><input type="number" id="elam" value="0.5" min="0.001" step="0.1" oninput="calcExp()"></div>
+        <div class="fr"><label>Cálculo</label><div class="seg">
+          <input type="radio" name="er" id="er1" value="le" checked onchange="calcExp()"><label for="er1">P(X ≤ x)</label>
+          <input type="radio" name="er" id="er2" value="ge" onchange="calcExp()"><label for="er2">P(X ≥ x)</label>
+          <input type="radio" name="er" id="er3" value="bt" onchange="calcExp()"><label for="er3">P(a ≤ X ≤ b)</label>
+        </div></div>
+        <div id="exp-x-row" class="fr"><label>x</label><input type="number" id="ex" value="3" min="0" step="0.1" oninput="calcExp()"></div>
+        <div id="exp-ab-row" class="g2" style="display:none"><div class="fr"><label>a</label><input type="number" id="ea" value="1" min="0" step="0.1" oninput="calcExp()"></div><div class="fr"><label>b</label><input type="number" id="eb" value="4" min="0" step="0.1" oninput="calcExp()"></div></div>
+      </div>
+      <div class="card"><div class="ctitle">Resultado y transformación</div><div id="exp-stats"></div><div id="exp-probs"></div><div id="exp-std" class="formula"></div><div class="chart-wrap" style="height:250px"><canvas id="exp-chart"></canvas></div></div>
+    </div>
+  </div>
 </section>
 
 <!-- ══ P2: POTENCIA ══ -->
@@ -463,8 +514,13 @@ footer a{color:var(--gold-dim);text-decoration:none;}
       <div class="fr"><label>n (tamaño de muestra por grupo): <span id="pn-v" class="rv">30</span></label>
         <input type="range" id="pn" min="2" max="200" value="30" oninput="document.getElementById('pn-v').textContent=this.value;calcPow()"></div>
       <div class="fr"><label>α (nivel de significancia):</label>
-        <select id="pa" onchange="calcPow()">
+        <select id="pow-alpha" onchange="calcPow()">
           <option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option>
+        </select>
+      </div>
+      <div class="fr"><label>Potencia objetivo:</label>
+        <select id="pow-target" onchange="calcPow()">
+          <option value="0.80" selected>80%</option><option value="0.90">90%</option><option value="0.95">95%</option>
         </select>
       </div>
     </div>
@@ -472,6 +528,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
       <div class="ctitle">Resultados</div>
       <div class="metrics" id="pow-stats"></div>
       <div id="pow-alert"></div>
+      <div id="pow-guide" class="guided"></div>
     </div>
   </div>
   <div class="card">
@@ -480,12 +537,59 @@ footer a{color:var(--gold-dim);text-decoration:none;}
   </div>
 </section>
 
+<!-- ══ P3: INFERENCIA ══ -->
+<section class="panel" id="p3">
+  <div class="sh"><h2>Inferencia Estadística</h2>
+    <p>Pruebas de hipótesis e intervalos de confianza para una y dos muestras</p></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ctitle">Procedimiento</div>
+      <div class="fr"><label>Selecciona el caso</label>
+        <select id="inf-type" onchange="buildInf()">
+          <option value="mean1z">Media de una muestra — Z (σ conocida)</option>
+          <option value="mean1t">Media de una muestra — t (σ desconocida)</option>
+          <option value="mean2">Dos medias independientes — t de Welch</option>
+          <option value="paired">Medias pareadas — t</option>
+          <option value="prop1">Una proporción — Z</option>
+          <option value="prop2">Dos proporciones — Z</option>
+          <option value="chiGof">Bondad de ajuste — χ²</option>
+          <option value="chiInd">Independencia — χ²</option>
+          <option value="var1">Una varianza — χ²</option>
+          <option value="var2">Razón de varianzas — F</option>
+        </select>
+      </div>
+      <div class="fr"><label>Hipótesis alternativa</label>
+        <select id="inf-alt" onchange="calcInf()">
+          <option value="two">Bilateral (≠)</option>
+          <option value="gt">Cola derecha (&gt;)</option>
+          <option value="lt">Cola izquierda (&lt;)</option>
+        </select>
+      </div>
+      <div class="fr"><label>Nivel de significancia α</label>
+        <select id="inf-alpha" onchange="calcInf()"><option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option></select>
+      </div>
+      <div id="inf-inputs"></div>
+      <button class="btn" onclick="calcInf()">⚡ Calcular prueba e intervalo</button>
+    </div>
+    <div class="card">
+      <div class="ctitle">Resultados</div>
+      <div class="modebar">
+        <button class="modebtn active" id="inf-compact-btn" onclick="setInfMode(false)">Compacto</button>
+        <button class="modebtn" id="inf-guided-btn" onclick="setInfMode(true)">Guiado</button>
+      </div>
+      <div id="inf-result"></div>
+      <div id="inf-guide" class="guided" style="display:none"></div>
+    </div>
+  </div>
+  <div class="ibox"><strong>Supuestos:</strong> independencia de las observaciones; normalidad aproximada o tamaño de muestra suficiente para medias; conteos esperados adecuados para proporciones; normalidad poblacional para inferencia sobre varianzas.</div>
+</section>
+
 </main>
 
 <footer>
   <div style="max-width:700px;margin:0 auto">
     <p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
-      Probabilidad y Distribuciones · v1.0</p>
+      Probabilidad y Distribuciones · v1.3</p>
     <p style="margin-bottom:10px">
       <span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br>
       <span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
@@ -531,7 +635,7 @@ function swD(w){['bin','poi','hyp','geo'].forEach(id=>{
   document.getElementById('d-'+id).classList.toggle('active',id===w);
   document.getElementById('sb-'+id).classList.toggle('active',id===w);
 });}
-function swC(w){['nor','t','chi','f'].forEach(id=>{
+function swC(w){['nor','t','chi','f','uni','exp'].forEach(id=>{
   document.getElementById('c-'+id).classList.toggle('active',id===w);
   document.getElementById('cb-'+id).classList.toggle('active',id===w);
 });}
@@ -680,7 +784,7 @@ function calcGeo(){
 }
 
 /* ══ CONTINUOUS CHART ════════════════════════════════════════════ */
-let contCharts={nor:null,t:null,chi:null,f:null};
+let contCharts={nor:null,t:null,chi:null,f:null,uni:null,exp:null};
 function drawContChart(id,xs,ys,fillLo,fillHi,yMax){
   const el=document.getElementById(id+'-chart');if(!el)return;
   if(contCharts[id])contCharts[id].destroy();
@@ -718,6 +822,9 @@ function calcNor(){
   else if(mode==='ge'){prob=1-CDF(x);lo=x;hi=mu+4*sg;label=`P(X ≥ ${x.toFixed(2)})`;}
   else{prob=CDF(b_)-CDF(a_);lo=a_;hi=b_;label=`P(${a_.toFixed(2)} ≤ X ≤ ${b_.toFixed(2)})`;}
   document.getElementById('nor-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
+  const raw=mode==='bt'?`${a_.toFixed(3)} y ${b_.toFixed(3)}`:x.toFixed(3);
+  const ztxt=mode==='bt'?`${((a_-mu)/sg).toFixed(4)} y ${((b_-mu)/sg).toFixed(4)}`:((x-mu)/sg).toFixed(4);
+  document.getElementById('nor-std').innerHTML=`<strong>Estandarización:</strong> Z = (X − μ)/σ. Para X = ${raw}, Z = ${ztxt}. La probabilidad se obtiene en N(0,1).`;
   const xs=xRange(mu-4*sg,mu+4*sg);
   drawContChart('nor',xs,xs.map(PDF),lo,hi);
   calcNorCrit();
@@ -812,14 +919,52 @@ function calcFCrit(){
   document.getElementById('f-crit').textContent=`F = ${c.toFixed(4)}`;
 }
 
+function calcUni(){
+  const a=numV('ua',0),b=numV('ub',10),mode=document.querySelector('input[name="ur"]:checked').value;
+  const x=numV('ux',6),c=numV('uc',2),d=numV('ud',7);
+  document.getElementById('uni-x-row').style.display=mode==='bt'?'none':'';
+  document.getElementById('uni-cd-row').style.display=mode==='bt'?'grid':'none';
+  if(!(b>a)){document.getElementById('uni-probs').innerHTML='<div class="alert aw">Se requiere b &gt; a.</div>';return;}
+  const CDF=v=>v<=a?0:v>=b?1:(v-a)/(b-a),PDF=v=>v>=a&&v<=b?1/(b-a):0;
+  let p,label,lo,hi,ref;
+  if(mode==='le'){p=CDF(x);label=`P(X ≤ ${x})`;lo=a;hi=x;ref=x;}
+  else if(mode==='ge'){p=1-CDF(x);label=`P(X ≥ ${x})`;lo=x;hi=b;ref=x;}
+  else{const l=Math.min(c,d),u=Math.max(c,d);p=CDF(u)-CDF(l);label=`P(${l} ≤ X ≤ ${u})`;lo=l;hi=u;ref=(l+u)/2;}
+  const mu=(a+b)/2,vr=(b-a)**2/12,sd=Math.sqrt(vr),z=(ref-mu)/sd;
+  document.getElementById('uni-stats').innerHTML=mH([{l:'Media',v:f4(mu)},{l:'Varianza',v:f4(vr)},{l:'σ',v:f4(sd)}]);
+  document.getElementById('uni-probs').innerHTML=probBoxes([{l:label,v:f4(p),main:true},{l:'Complemento',v:f4(1-p)}]);
+  document.getElementById('uni-std').innerHTML=`Z = (X − μ)/σ = (${ref.toFixed(4)} − ${mu.toFixed(4)})/${sd.toFixed(4)} = <strong>${z.toFixed(4)}</strong>.<br>Esta transformación tiene media 0 y varianza 1, pero conserva forma uniforme.`;
+  const pad=(b-a)*.12,xs=xRange(a-pad,b+pad);
+  drawContChart('uni',xs,xs.map(PDF),lo,hi,1/(b-a));
+}
+
+function calcExp(){
+  const lam=Math.max(.001,numV('elam',.5)),mode=document.querySelector('input[name="er"]:checked').value;
+  const x=Math.max(0,numV('ex',3)),a=Math.max(0,numV('ea',1)),b=Math.max(0,numV('eb',4));
+  document.getElementById('exp-x-row').style.display=mode==='bt'?'none':'';
+  document.getElementById('exp-ab-row').style.display=mode==='bt'?'grid':'none';
+  const CDF=v=>v<=0?0:1-Math.exp(-lam*v),PDF=v=>v<0?0:lam*Math.exp(-lam*v);
+  let p,label,lo,hi,ref;
+  if(mode==='le'){p=CDF(x);label=`P(X ≤ ${x})`;lo=0;hi=x;ref=x;}
+  else if(mode==='ge'){p=1-CDF(x);label=`P(X ≥ ${x})`;lo=x;hi=-Math.log(.001)/lam;ref=x;}
+  else{const l=Math.min(a,b),u=Math.max(a,b);p=CDF(u)-CDF(l);label=`P(${l} ≤ X ≤ ${u})`;lo=l;hi=u;ref=(l+u)/2;}
+  const mu=1/lam,vr=1/(lam*lam),y=lam*ref,z=y-1;
+  document.getElementById('exp-stats').innerHTML=mH([{l:'Media 1/λ',v:f4(mu)},{l:'Varianza 1/λ²',v:f4(vr)},{l:'σ',v:f4(mu)}]);
+  document.getElementById('exp-probs').innerHTML=probBoxes([{l:label,v:f4(p),main:true},{l:'Complemento',v:f4(1-p)}]);
+  document.getElementById('exp-std').innerHTML=`Transformación canónica: Y = λX = ${lam.toFixed(4)}(${ref.toFixed(4)}) = <strong>${y.toFixed(4)}</strong>, por lo que Y ~ Exp(1).<br>Puntaje estándar: Z = λX − 1 = <strong>${z.toFixed(4)}</strong> (no es normal estándar).`;
+  const xmax=-Math.log(.001)/lam,xs=xRange(0,xmax);
+  drawContChart('exp',xs,xs.map(PDF),lo,hi,lam);
+}
+
 /* ══ POTENCIA ════════════════════════════════════════════════════ */
 let powChart=null;
 function calcPow(){
   const type=document.querySelector('input[name="pw"]:checked').value;
-  const delta=+document.getElementById('pd').value||5;
-  const sigma=Math.max(0.01,+document.getElementById('ps').value||10);
-  const n=+document.getElementById('pn').value||30;
-  const alpha=+document.getElementById('pa').value||0.05;
+  const delta=Math.abs(numV('pd',5));
+  const sigma=Math.max(0.01,numV('ps',10));
+  const n=Math.max(2,numV('pn',30));
+  const alpha=numV('pow-alpha',0.05);
+  const target=numV('pow-target',0.80);
   const d=delta/sigma;
   const za=zp(1-alpha/2);
   function power(n_){
@@ -828,16 +973,25 @@ function calcPow(){
        La versión anterior solo sumaba 1-Φ(za-ncp) y omitía Φ(-za-ncp). */
     return jStat.normal.cdf(-za-ncp,0,1)+(1-jStat.normal.cdf(za-ncp,0,1));
   }
-  const pow=power(n),beta=1-pow;
+  const pow=Math.max(0,Math.min(1,power(n))),beta=1-pow;
+  let nRequired=2;
+  while(nRequired<10000&&power(nRequired)<target)nRequired++;
   document.getElementById('pow-stats').innerHTML=mH([
     {l:'d de Cohen',v:d.toFixed(3)},{l:'Potencia (1−β)',v:pct(pow),c:'hi'},
-    {l:'β (Error II)',v:pct(beta)},{l:'n por grupo',v:n+''}]);
+    {l:'β (Error II)',v:pct(beta)},{l:'n por grupo',v:n+''},
+    {l:`n para ${pct(target)}`,v:nRequired<10000?nRequired+'':'> 9999'}]);
   let alertCls='ai',alertMsg=`Potencia de ${pct(pow)} con n = ${n} por grupo.`;
   if(pow<0.5){alertCls='aw';alertMsg='⚠️ Potencia baja — considera aumentar n o el tamaño del efecto.';}
   else if(pow>=0.8){alertCls='as';alertMsg=`✅ ${alertMsg} Potencia adecuada (≥ 80%).`;}
   document.getElementById('pow-alert').innerHTML=`<div class="alert ${alertCls}">${alertMsg}</div>`;
+  const ncp=type==='two'?d*Math.sqrt(n/2):d*Math.sqrt(n);
+  document.getElementById('pow-guide').innerHTML=`<div class="ctitle">Desarrollo</div>
+    <div class="formula">d = Δ/σ = ${delta.toFixed(4)}/${sigma.toFixed(4)} = ${d.toFixed(4)}<br>
+    z<sub>1−α/2</sub> = ${za.toFixed(4)} · δ = d√${type==='two'?'(n/2)':'n'} = ${ncp.toFixed(4)}<br>
+    Potencia = Φ(−z<sub>crítico</sub>−δ) + 1−Φ(z<sub>crítico</sub>−δ) = ${pow.toFixed(6)}</div>
+    <p class="result-line">La potencia aumenta al crecer Δ o n, y disminuye al crecer σ o al usar un α más pequeño. El cálculo mostrado es la aproximación normal bilateral.</p>`;
   // Power curve
-  const ns=Array.from({length:99},(_,i)=>i+2);
+  const ns=Array.from({length:199},(_,i)=>i+2);
   const pows=ns.map(power);
   if(powChart)powChart.destroy();
   powChart=new Chart(document.getElementById('pow-chart').getContext('2d'),{
@@ -855,13 +1009,121 @@ function calcPow(){
   });
 }
 
+/* ══ INFERENCIA ESTADÍSTICA ═════════════════════════════════════ */
+let infGuided=false;
+const infField=(id,label,value,min='')=>`<div class="fr"><label for="${id}">${label}</label><input id="${id}" type="number" step="any" value="${value}" ${min!==''?`min="${min}"`:''} oninput="calcInf()"></div>`;
+function buildInf(){
+  const type=document.getElementById('inf-type').value;
+  const fields={
+    mean1z:[['ixbar','Media muestral x̄',52],['imu0','Media hipotética μ₀',50],['isigma','Desviación poblacional σ',10,0],['in','Tamaño n',40,2]],
+    mean1t:[['ixbar','Media muestral x̄',52],['imu0','Media hipotética μ₀',50],['is','Desviación muestral s',10,0],['in','Tamaño n',25,2]],
+    mean2:[['ix1','Media x̄₁',54],['is1','Desviación s₁',9,0],['in1','Tamaño n₁',30,2],['ix2','Media x̄₂',49],['is2','Desviación s₂',8,0],['in2','Tamaño n₂',28,2],['idiff0','Diferencia hipotética Δ₀',0]],
+    paired:[['idbar','Media de diferencias d̄',3],['id0','Diferencia hipotética d₀',0],['isd','Desviación de diferencias s_d',6,0],['in','Número de pares n',24,2]],
+    prop1:[['ix','Éxitos x',62,0],['in','Tamaño n',100,1],['ip0','Proporción hipotética p₀',0.5,0]],
+    prop2:[['ix1','Éxitos x₁',62,0],['in1','Tamaño n₁',100,1],['ix2','Éxitos x₂',48,0],['in2','Tamaño n₂',100,1],['idiff0','Diferencia hipotética Δ₀',0]],
+    var1:[['is2','Varianza muestral s²',25,0],['is20','Varianza hipotética σ₀²',16,0],['in','Tamaño n',20,2]],
+    var2:[['is21','Varianza muestral s₁²',25,0],['in1','Tamaño n₁',20,2],['is22','Varianza muestral s₂²',16,0],['in2','Tamaño n₂',18,2],['ir0','Razón hipotética R₀',1,0]]
+  };
+  if(type==='chiGof'){
+    document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label>Frecuencias observadas O (separadas por coma)</label><input id="igof-o" type="text" value="18, 22, 30, 30" oninput="calcInf()"></div><div class="fr"><label>Frecuencias esperadas E</label><input id="igof-e" type="text" value="25, 25, 25, 25" oninput="calcInf()"></div>${infField('igof-m','Parámetros estimados con los datos',0,0)}`;
+  }else if(type==='chiInd'){
+    document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label>Tabla observada (comas = columnas; punto y coma = filas)</label><input id="iind-table" type="text" value="20, 30; 25, 25" oninput="calcInf()"></div>`;
+  }else document.getElementById('inf-inputs').innerHTML=fields[type].map(v=>infField(...v)).join('');
+  calcInf();
+}
+function setInfMode(guided){
+  infGuided=guided;
+  document.getElementById('inf-guide').style.display=guided?'block':'none';
+  document.getElementById('inf-compact-btn').classList.toggle('active',!guided);
+  document.getElementById('inf-guided-btn').classList.toggle('active',guided);
+}
+function infP(stat,cdf,alt){
+  const left=Math.max(0,Math.min(1,cdf(stat))),right=1-left;
+  return alt==='gt'?right:alt==='lt'?left:Math.min(1,2*Math.min(left,right));
+}
+function parseNums(text){return text.split(',').map(x=>Number(x.trim()));}
+function calcChiApplied(type,alpha){
+  let stat=0,df,rows='',label,formula,detail;
+  if(type==='chiGof'){
+    const obs=parseNums(document.getElementById('igof-o').value),exp=parseNums(document.getElementById('igof-e').value),m=Math.max(0,Math.floor(numV('igof-m',0)));
+    if(obs.length<2||obs.length!==exp.length||[...obs,...exp].some(x=>!Number.isFinite(x)||x<0)||exp.some(x=>x<=0))throw Error('O y E deben tener la misma cantidad de categorías; O ≥ 0 y E > 0.');
+    const sumO=obs.reduce((a,b)=>a+b,0),sumE=exp.reduce((a,b)=>a+b,0);
+    if(Math.abs(sumO-sumE)>Math.max(.001,.001*sumO))throw Error(`Las frecuencias deben sumar lo mismo (ΣO=${f4(sumO)}, ΣE=${f4(sumE)}).`);
+    df=obs.length-1-m;if(df<1)throw Error('Los grados de libertad deben ser al menos 1.');
+    rows=obs.map((o,i)=>{const dif=o-exp[i],term=dif*dif/exp[i];stat+=term;return`<tr><td>${i+1}</td><td>${f4(o)}</td><td>${f4(exp[i])}</td><td>${f4(dif)}</td><td>${f4(term)}</td></tr>`;}).join('');
+    label='Bondad de ajuste';formula='χ² = Σ (Oᵢ−Eᵢ)²/Eᵢ';detail=`gl = k−1−m = ${obs.length}−1−${m} = ${df}`;
+  }else{
+    const matrix=document.getElementById('iind-table').value.split(';').map(parseNums),cols=matrix[0]?.length||0;
+    if(matrix.length<2||cols<2||matrix.some(r=>r.length!==cols||r.some(x=>!Number.isFinite(x)||x<0)))throw Error('Ingresa una matriz rectangular de al menos 2×2 con conteos no negativos.');
+    const rTotals=matrix.map(r=>r.reduce((a,b)=>a+b,0)),cTotals=Array.from({length:cols},(_,j)=>matrix.reduce((s,r)=>s+r[j],0)),total=rTotals.reduce((a,b)=>a+b,0);
+    if(total<=0||rTotals.some(x=>x<=0)||cTotals.some(x=>x<=0))throw Error('Cada fila y columna debe tener total positivo.');
+    df=(matrix.length-1)*(cols-1);
+    rows=matrix.flatMap((r,i)=>r.map((o,j)=>{const e=rTotals[i]*cTotals[j]/total,term=(o-e)**2/e;stat+=term;return`<tr><td>${i+1}, ${j+1}</td><td>${f4(o)}</td><td>${f4(e)}</td><td>${f4(o-e)}</td><td>${f4(term)}</td></tr>`;})).join('');
+    label='Independencia';formula='Eᵢⱼ = (total fila i × total columna j)/N; χ² = Σ (Oᵢⱼ−Eᵢⱼ)²/Eᵢⱼ';detail=`gl = (r−1)(c−1) = (${matrix.length}−1)(${cols}−1) = ${df}`;
+  }
+  const p=1-jStat.chisquare.cdf(stat,df),critical=jStat.chisquare.inv(1-alpha,df),reject=p<alpha,decision=reject?'Rechazar H₀':'No rechazar H₀';
+  document.getElementById('inf-result').innerHTML=mH([{l:'Prueba',v:label},{l:'χ² calculada',v:f4(stat),c:'hi'},{l:'χ² crítica',v:f4(critical)},{l:'valor p',v:f4(p)}])+`<div class="alert ${reject?'aw':'as'}"><strong>${decision}</strong>, porque p ${reject?'&lt;':'≥'} α (${f4(p)} ${reject?'&lt;':'≥'} ${alpha}).</div>`;
+  document.getElementById('inf-guide').innerHTML=`<div class="ctitle">Secuencia de cálculo: ${label}</div><div class="formula"><strong>1. Fórmula general</strong><br>${formula}<br>${detail}<br><br><strong>2. Tabla de cálculo</strong></div><div class="scroll-x"><table class="tbl"><thead><tr><th>Categoría/celda</th><th>O</th><th>E</th><th>O−E</th><th>(O−E)²/E</th></tr></thead><tbody>${rows}<tr class="hi-row"><td colspan="4">Σ</td><td>${f4(stat)}</td></tr></tbody></table></div><div class="formula"><strong>3. Resultado</strong><br>χ² = ${f4(stat)}; χ² crítica = ${f4(critical)}; valor p = ${f4(p)}.<br><strong>${decision}</strong> con α = ${alpha}.</div>`;
+}
+function calcInf(){
+  const type=document.getElementById('inf-type').value,alt=document.getElementById('inf-alt').value;
+  const alpha=numV('inf-alpha',.05),conf=1-alpha;
+  const v=id=>numV(id,NaN),positive=(...xs)=>xs.every(x=>Number.isFinite(x)&&x>0);
+  let stat,p,estimate,se,lo,hi,df='',symbol='',dist='',formula='',steps='',ciFormula='';
+  const zcrit=zp(1-alpha/2);
+  try{
+    if(type==='chiGof'||type==='chiInd'){calcChiApplied(type,alpha);return;}
+    if(type==='mean1z'){
+      const x=v('ixbar'),mu0=v('imu0'),sigma=v('isigma'),n=v('in'); if(!positive(sigma,n))throw Error('σ y n deben ser positivos.');
+      estimate=x;se=sigma/Math.sqrt(n);stat=(x-mu0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);lo=x-zcrit*se;hi=x+zcrit*se;symbol='Z';dist='Normal estándar';
+      formula='Z = (x̄ − μ₀)/(σ/√n)';steps=`Z = (${f4(x)} − ${f4(mu0)})/(${f4(sigma)}/√${n}) = ${f4(stat)}`;ciFormula=`IC = x̄ ± z<sub>1−α/2</sub>·σ/√n`;
+    }else if(type==='mean1t'){
+      const x=v('ixbar'),mu0=v('imu0'),s=v('is'),n=v('in'); if(!positive(s,n)||n<=1)throw Error('s debe ser positiva y n mayor que 1.');
+      df=n-1;estimate=x;se=s/Math.sqrt(n);stat=(x-mu0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=x-c*se;hi=x+c*se;symbol='t';dist=`t(${df})`;
+      formula='t = (x̄ − μ₀)/(s/√n)';steps=`t = (${f4(x)} − ${f4(mu0)})/(${f4(s)}/√${n}) = ${f4(stat)}, gl = ${df}`;ciFormula=`IC = x̄ ± t<sub>1−α/2, gl</sub>·s/√n`;
+    }else if(type==='mean2'){
+      const x1=v('ix1'),x2=v('ix2'),s1=v('is1'),s2=v('is2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(s1,s2,n1,n2)||n1<=1||n2<=1)throw Error('Las desviaciones deben ser positivas y n₁, n₂ mayores que 1.');
+      const a=s1*s1/n1,b=s2*s2/n2;df=(a+b)**2/(a*a/(n1-1)+b*b/(n2-1));estimate=x1-x2;se=Math.sqrt(a+b);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=estimate-c*se;hi=estimate+c*se;symbol='t';dist=`t de Welch (${df.toFixed(2)} gl)`;
+      formula='t = [(x̄₁−x̄₂)−Δ₀]/√(s₁²/n₁+s₂²/n₂)';steps=`EE = √(${f4(s1)}²/${n1} + ${f4(s2)}²/${n2}) = ${f4(se)}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}<br>gl de Welch = ${df.toFixed(4)}`;ciFormula='IC = (x̄₁−x̄₂) ± t*·EE';
+    }else if(type==='paired'){
+      const d=v('idbar'),d0=v('id0'),sd=v('isd'),n=v('in'); if(!positive(sd,n)||n<=1)throw Error('s_d debe ser positiva y n mayor que 1.');
+      df=n-1;estimate=d;se=sd/Math.sqrt(n);stat=(d-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=d-c*se;hi=d+c*se;symbol='t';dist=`t pareada (${df} gl)`;
+      formula='t = (d̄ − d₀)/(s_d/√n)';steps=`t = (${f4(d)} − ${f4(d0)})/(${f4(sd)}/√${n}) = ${f4(stat)}, gl = ${df}`;ciFormula='IC = d̄ ± t*·s_d/√n';
+    }else if(type==='prop1'){
+      const x=v('ix'),n=v('in'),p0=v('ip0'); if(!positive(n)||x<0||x>n||p0<=0||p0>=1)throw Error('Se requiere 0 ≤ x ≤ n y 0 < p₀ < 1.');
+      estimate=x/n;se=Math.sqrt(p0*(1-p0)/n);stat=(estimate-p0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);const den=1+zcrit*zcrit/n,center=(estimate+zcrit*zcrit/(2*n))/den,half=zcrit*Math.sqrt(estimate*(1-estimate)/n+zcrit*zcrit/(4*n*n))/den;lo=center-half;hi=center+half;symbol='Z';dist='Normal estándar';
+      formula='Z = (p̂ − p₀)/√[p₀(1−p₀)/n]';steps=`p̂ = ${x}/${n} = ${f4(estimate)}<br>Z = (${f4(estimate)} − ${f4(p0)})/${f4(se)} = ${f4(stat)}`;ciFormula='IC de Wilson para p (más estable que Wald)';
+    }else if(type==='prop2'){
+      const x1=v('ix1'),n1=v('in1'),x2=v('ix2'),n2=v('in2'),d0=v('idiff0'); if(!positive(n1,n2)||x1<0||x1>n1||x2<0||x2>n2)throw Error('Cada conteo debe cumplir 0 ≤ x ≤ n.');
+      const p1=x1/n1,p2=x2/n2,pooled=(x1+x2)/(n1+n2);estimate=p1-p2;se=d0===0?Math.sqrt(pooled*(1-pooled)*(1/n1+1/n2)):Math.sqrt(p1*(1-p1)/n1+p2*(1-p2)/n2);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);const seCI=Math.sqrt(p1*(1-p1)/n1+p2*(1-p2)/n2);lo=estimate-zcrit*seCI;hi=estimate+zcrit*seCI;symbol='Z';dist='Normal estándar';
+      formula='Z = [(p̂₁−p̂₂)−Δ₀]/EE';steps=`p̂₁ = ${x1}/${n1} = ${f4(p1)}; p̂₂ = ${x2}/${n2} = ${f4(p2)}<br>EE de prueba = ${f4(se)}<br>Z = (${f4(estimate)} − ${f4(d0)})/${f4(se)} = ${f4(stat)}`;ciFormula='IC = (p̂₁−p̂₂) ± z*·EE no agrupado';
+    }else if(type==='var1'){
+      const s2=v('is2'),s20=v('is20'),n=v('in'); if(!positive(s2,s20,n)||n<=1)throw Error('Las varianzas deben ser positivas y n mayor que 1.');
+      df=n-1;estimate=s2;stat=df*s2/s20;p=infP(stat,q=>jStat.chisquare.cdf(q,df),alt);lo=df*s2/jStat.chisquare.inv(1-alpha/2,df);hi=df*s2/jStat.chisquare.inv(alpha/2,df);symbol='χ²';dist=`χ²(${df})`;se=NaN;
+      formula='χ² = (n−1)s²/σ₀²';steps=`χ² = (${n}−1)(${f4(s2)})/${f4(s20)} = ${f4(stat)}, gl = ${df}`;ciFormula='IC(σ²) = [(n−1)s²/χ²<sub>1−α/2</sub>, (n−1)s²/χ²<sub>α/2</sub>]';
+    }else{
+      const s21=v('is21'),s22=v('is22'),n1=v('in1'),n2=v('in2'),r0=v('ir0'); if(!positive(s21,s22,n1,n2,r0)||n1<=1||n2<=1)throw Error('Varianzas y R₀ deben ser positivas; n₁ y n₂ mayores que 1.');
+      const df1=n1-1,df2=n2-1;df=`${df1}, ${df2}`;estimate=s21/s22;stat=estimate/r0;p=infP(stat,q=>jStat.centralF.cdf(q,df1,df2),alt);lo=estimate/jStat.centralF.inv(1-alpha/2,df1,df2);hi=estimate/jStat.centralF.inv(alpha/2,df1,df2);symbol='F';dist=`F(${df1}, ${df2})`;se=NaN;
+      formula='F = (s₁²/s₂²)/R₀';steps=`F = (${f4(s21)}/${f4(s22)})/${f4(r0)} = ${f4(stat)}, gl₁ = ${df1}, gl₂ = ${df2}`;ciFormula='IC(σ₁²/σ₂²) = [(s₁²/s₂²)/F<sub>1−α/2</sub>, (s₁²/s₂²)/F<sub>α/2</sub>]';
+    }
+    if(!Number.isFinite(stat)||!Number.isFinite(p)||!Number.isFinite(lo)||!Number.isFinite(hi))throw Error('Los parámetros producen un cálculo no definido. Revisa los valores.');
+    const reject=p<alpha,decision=reject?'Rechazar H₀':'No rechazar H₀';
+    document.getElementById('inf-result').innerHTML=mH([{l:'Estimación',v:f4(estimate)},{l:`Estadístico ${symbol}`,v:f4(stat),c:'hi'},{l:'valor p',v:f4(p)},{l:`IC ${(conf*100).toFixed(0)}%`,v:`[${f4(lo)}, ${f4(hi)}]`}])+`<div class="alert ${reject?'aw':'as'}"><strong>${decision}</strong>, porque p ${reject?'&lt;':'≥'} α (${f4(p)} ${reject?'&lt;':'≥'} ${alpha}).</div>`;
+    document.getElementById('inf-guide').innerHTML=`<div class="ctitle">Secuencia de cálculo</div><div class="formula"><strong>1. Estadístico (${dist})</strong><br>${formula}<br>${steps}<br><br><strong>2. Probabilidad</strong><br>valor p (${alt==='two'?'bilateral':alt==='gt'?'cola derecha':'cola izquierda'}) = ${f4(p)}<br><br><strong>3. Intervalo de confianza</strong><br>${ciFormula}<br>IC ${(conf*100).toFixed(0)}% = [${f4(lo)}, ${f4(hi)}]<br><br><strong>4. Decisión</strong><br>${decision} con α = ${alpha}.</div>`;
+  }catch(err){
+    document.getElementById('inf-result').innerHTML=`<div class="alert aw">${err.message}</div>`;
+    document.getElementById('inf-guide').innerHTML='';
+  }
+}
+
 /* ══ REFRESH ALL ═════════════════════════════════════════════════ */
-function refreshAll(){calcBin();calcPoi();calcHyp();calcGeo();calcNor();calcT();calcChi();calcF();calcPow();}
+function refreshAll(){calcBin();calcPoi();calcHyp();calcGeo();calcNor();calcT();calcChi();calcF();calcUni();calcExp();calcPow();calcInf();}
 
 /* ══ INIT ════════════════════════════════════════════════════════ */
 calcBin();calcPoi();calcHyp();calcGeo();
-calcNor();calcT();calcChi();calcF();
+calcNor();calcT();calcChi();calcF();calcUni();calcExp();
 calcPow();
+buildInf();
 (function(){const s=localStorage.getItem('theme-prob');if(s==='light')toggleTheme();})();
 
 if('serviceWorker' in navigator){
