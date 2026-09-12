@@ -817,7 +817,7 @@ let powChart=null;
 function calcPow(){
   const type=document.querySelector('input[name="pw"]:checked').value;
   const delta=+document.getElementById('pd').value||5;
-  const sigma=+document.getElementById('ps').value||10;
+  const sigma=Math.max(0.01,+document.getElementById('ps').value||10);
   const n=+document.getElementById('pn').value||30;
   const alpha=+document.getElementById('pa').value||0.05;
   const d=delta/sigma;
