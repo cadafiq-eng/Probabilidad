@@ -132,7 +132,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
   <span class="logo">HumAIno®</span>
   <span style="color:var(--border)">│</span>
   <h1>Probabilidad y Distribuciones</h1>
-  <span class="badge" style="margin-left:auto">v1.3</span>
+  <span class="badge" style="margin-left:auto">v1.3.1</span>
   <button class="thbtn" onclick="toggleTheme()"><span id="thi">☀️</span><span id="thl">Claro</span></button>
 </header>
 
@@ -299,12 +299,19 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 
   <!-- NORMAL -->
   <div class="subpanel active" id="c-nor">
-    <div class="ibox"><strong>Normal N(μ, σ²)</strong> — simétrica, unimodal. Z = (X−μ)/σ estandariza a N(0,1).</div>
+    <div class="ibox" id="nor-case"><strong>Observación individual con σ conocida:</strong> X ~ N(μ, σ²) y Z = (X−μ)/σ.</div>
     <div class="g2">
       <div class="card">
         <div class="ctitle">Parámetros</div>
+        <div class="fr"><label>Variable que se desea calcular</label>
+          <select id="nor-unit" onchange="calcNor()">
+            <option value="individual" selected>Observación individual X</option>
+            <option value="mean">Media muestral x̄ (σ conocida)</option>
+          </select>
+        </div>
         <div class="fr"><label>μ (media):</label><input type="number" id="nm" value="0" step="0.1" oninput="calcNor()"></div>
-        <div class="fr"><label>σ (desviación estándar):</label><input type="number" id="ns" value="1" min="0.01" step="0.1" oninput="calcNor()"></div>
+        <div class="fr"><label>σ poblacional conocida:</label><input type="number" id="ns" value="1" min="0.01" step="0.1" oninput="calcNor()"></div>
+        <div class="fr" id="nor-n-row" style="display:none"><label>Tamaño de muestra n:</label><input type="number" id="nn" value="25" min="1" step="1" oninput="calcNor()"></div>
         <div class="fr"><label>Cálculo</label>
           <div class="seg">
             <input type="radio" name="nr" id="nr1" value="le" checked onchange="calcNor()"><label for="nr1">P(X ≤ x)</label>
@@ -322,7 +329,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
         <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
           <label>Valor crítico — dado α, encuentra x_α:</label>
           <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
-            <input type="number" id="nalpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px">
+            <input type="number" id="nalpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px" oninput="calcNorCrit()">
             <div class="seg">
               <input type="radio" name="ntail" id="nt1" value="two" checked onchange="calcNorCrit()"><label for="nt1">Bilateral</label>
               <input type="radio" name="ntail" id="nt2" value="one" onchange="calcNorCrit()"><label for="nt2">Unilateral</label>
@@ -589,7 +596,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <footer>
   <div style="max-width:700px;margin:0 auto">
     <p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
-      Probabilidad y Distribuciones · v1.3</p>
+      Probabilidad y Distribuciones · v1.3.1</p>
     <p style="margin-bottom:10px">
       <span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br>
       <span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
@@ -807,8 +814,13 @@ function xRange(lo,hi,n=120){return Array.from({length:n},(_,i)=>lo+(hi-lo)*i/(n
 
 /* ══ NORMAL ══════════════════════════════════════════════════════ */
 function calcNor(){
-  const mu=+document.getElementById('nm').value||0;
-  const sg=Math.max(0.01,+document.getElementById('ns').value||1);
+  const mu=numV('nm',0),sigma=Math.max(0.01,numV('ns',1));
+  const unit=document.getElementById('nor-unit').value,n=Math.max(1,Math.floor(numV('nn',25)));
+  const isMean=unit==='mean',sg=isMean?sigma/Math.sqrt(n):sigma,sym=isMean?'x̄':'X';
+  document.getElementById('nor-n-row').style.display=isMean?'':'none';
+  document.getElementById('nor-case').innerHTML=isMean
+    ?`<strong>Media muestral con σ conocida:</strong> x̄ tiene media μ y error estándar σ/√n = ${f4(sg)}. Si la población es normal, el resultado es exacto; en otros casos es una aproximación del Teorema del Límite Central.`
+    :'<strong>Observación individual con σ conocida:</strong> X ~ N(μ, σ²) y Z = (X−μ)/σ.';
   const mode=document.querySelector('input[name="nr"]:checked').value;
   const xEl=document.getElementById('nor-x-row'),abEl=document.getElementById('nor-ab-row');
   xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
@@ -818,22 +830,33 @@ function calcNor(){
   const CDF=v=>jStat.normal.cdf(v,mu,sg);
   const PDF=v=>jStat.normal.pdf(v,mu,sg);
   let prob,lo,hi,label;
-  if(mode==='le'){prob=CDF(x);lo=mu-4*sg;hi=x;label=`P(X ≤ ${x.toFixed(2)})`;}
-  else if(mode==='ge'){prob=1-CDF(x);lo=x;hi=mu+4*sg;label=`P(X ≥ ${x.toFixed(2)})`;}
-  else{prob=CDF(b_)-CDF(a_);lo=a_;hi=b_;label=`P(${a_.toFixed(2)} ≤ X ≤ ${b_.toFixed(2)})`;}
+  if(mode==='le'){prob=CDF(x);lo=mu-4*sg;hi=x;label=`P(${sym} ≤ ${x.toFixed(2)})`;}
+  else if(mode==='ge'){prob=1-CDF(x);lo=x;hi=mu+4*sg;label=`P(${sym} ≥ ${x.toFixed(2)})`;}
+  else{prob=CDF(b_)-CDF(a_);lo=a_;hi=b_;label=`P(${a_.toFixed(2)} ≤ ${sym} ≤ ${b_.toFixed(2)})`;}
   document.getElementById('nor-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
-  const raw=mode==='bt'?`${a_.toFixed(3)} y ${b_.toFixed(3)}`:x.toFixed(3);
-  const ztxt=mode==='bt'?`${((a_-mu)/sg).toFixed(4)} y ${((b_-mu)/sg).toFixed(4)}`:((x-mu)/sg).toFixed(4);
-  document.getElementById('nor-std').innerHTML=`<strong>Estandarización:</strong> Z = (X − μ)/σ. Para X = ${raw}, Z = ${ztxt}. La probabilidad se obtiene en N(0,1).`;
+  const denominator=isMean?`σ/√n = ${f4(sigma)}/√${n} = ${f4(sg)}`:`σ = ${f4(sigma)}`;
+  let development;
+  if(mode==='bt'){
+    const z1=(a_-mu)/sg,z2=(b_-mu)/sg,c1=jStat.normal.cdf(z1,0,1),c2=jStat.normal.cdf(z2,0,1);
+    development=`<strong>1. Error estándar:</strong> ${denominator}<br><strong>2. Estandarización de límites:</strong><br>z₁ = (${f4(a_)} − ${f4(mu)})/${f4(sg)} = ${f4(z1)}<br>z₂ = (${f4(b_)} − ${f4(mu)})/${f4(sg)} = ${f4(z2)}<br><strong>3. Área entre límites:</strong><br>Φ(z₂) − Φ(z₁) = ${f4(c2)} − ${f4(c1)} = <strong>${f4(prob)}</strong>`;
+  }else{
+    const z=(x-mu)/sg,c=jStat.normal.cdf(z,0,1);
+    development=`<strong>1. Error estándar:</strong> ${denominator}<br><strong>2. Estandarización:</strong><br>Z = (${f4(x)} − ${f4(mu)})/${f4(sg)} = ${f4(z)}<br><strong>3. Área:</strong><br>${mode==='le'?`Φ(${f4(z)}) = ${f4(c)}`:`1 − Φ(${f4(z)}) = 1 − ${f4(c)} = ${f4(prob)}`}`;
+  }
+  document.getElementById('nor-std').innerHTML=`<div class="ctitle">Secuencia de cálculo — ${isMean?'media muestral':'observación individual'}</div><div class="formula">Fórmula general: Z = (${sym} − μ)/${isMean?'(σ/√n)':'σ'}<br><br>${development}</div>`;
   const xs=xRange(mu-4*sg,mu+4*sg);
   drawContChart('nor',xs,xs.map(PDF),lo,hi);
   calcNorCrit();
 }
 function calcNorCrit(){
-  const a=+document.getElementById('nalpha').value||0.05;
+  const a=numV('nalpha',0.05),mu=numV('nm',0),sigma=Math.max(.01,numV('ns',1));
+  const isMean=document.getElementById('nor-unit').value==='mean',n=Math.max(1,Math.floor(numV('nn',25))),se=isMean?sigma/Math.sqrt(n):sigma;
   const tail=document.querySelector('input[name="ntail"]:checked').value;
   const z=tail==='two'?normalPPF(1-a/2):normalPPF(1-a);
-  document.getElementById('nor-crit').textContent=`z = ${z.toFixed(4)}`;
+  const lower=mu-z*se,upper=mu+z*se,label=isMean?'x̄':'x';
+  document.getElementById('nor-crit').textContent=tail==='two'
+    ?`z = ±${z.toFixed(4)} · ${label} críticos = [${lower.toFixed(4)}, ${upper.toFixed(4)}]`
+    :`z = ${z.toFixed(4)} · ${label} crítico = ${upper.toFixed(4)}`;
 }
 
 /* ══ t-STUDENT ═══════════════════════════════════════════════════ */
