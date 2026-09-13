@@ -132,7 +132,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
   <span class="logo">HumAIno®</span>
   <span style="color:var(--border)">│</span>
   <h1>Probabilidad y Distribuciones</h1>
-  <span class="badge" style="margin-left:auto">v1.3.1</span>
+  <span class="badge" style="margin-left:auto">v1.3.2</span>
   <button class="thbtn" onclick="toggleTheme()"><span id="thi">☀️</span><span id="thl">Claro</span></button>
 </header>
 
@@ -299,7 +299,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 
   <!-- NORMAL -->
   <div class="subpanel active" id="c-nor">
-    <div class="ibox" id="nor-case"><strong>Observación individual con σ conocida:</strong> X ~ N(μ, σ²) y Z = (X−μ)/σ.</div>
+    <div class="ibox" id="nor-case"><strong>Observación individual con σ conocida:</strong><br>z₁ = (a−μ)/σ &nbsp;;&nbsp; z₂ = (b−μ)/σ<br>P(a ≤ X ≤ b) = Φ(z₂) − Φ(z₁).</div>
     <div class="g2">
       <div class="card">
         <div class="ctitle">Parámetros</div>
@@ -314,13 +314,13 @@ footer a{color:var(--gold-dim);text-decoration:none;}
         <div class="fr" id="nor-n-row" style="display:none"><label>Tamaño de muestra n:</label><input type="number" id="nn" value="25" min="1" step="1" oninput="calcNor()"></div>
         <div class="fr"><label>Cálculo</label>
           <div class="seg">
-            <input type="radio" name="nr" id="nr1" value="le" checked onchange="calcNor()"><label for="nr1">P(X ≤ x)</label>
-            <input type="radio" name="nr" id="nr2" value="ge" onchange="calcNor()"><label for="nr2">P(X ≥ x)</label>
-            <input type="radio" name="nr" id="nr3" value="bt" onchange="calcNor()"><label for="nr3">P(a ≤ X ≤ b)</label>
+            <input type="radio" name="nr" id="nr1" value="le" onchange="calcNor()"><label id="nrl1" for="nr1">P(X ≤ x)</label>
+            <input type="radio" name="nr" id="nr2" value="ge" onchange="calcNor()"><label id="nrl2" for="nr2">P(X ≥ x)</label>
+            <input type="radio" name="nr" id="nr3" value="bt" checked onchange="calcNor()"><label id="nrl3" for="nr3">P(a ≤ X ≤ b)</label>
           </div>
         </div>
-        <div id="nor-x-row" class="fr"><label>x:</label><input type="number" id="nx" value="1.96" step="0.01" oninput="calcNor()"></div>
-        <div id="nor-ab-row" class="fr" style="display:none">
+        <div id="nor-x-row" class="fr" style="display:none"><label>x:</label><input type="number" id="nx" value="1.96" step="0.01" oninput="calcNor()"></div>
+        <div id="nor-ab-row" class="fr">
           <div style="display:flex;gap:10px">
             <div style="flex:1"><label>a:</label><input type="number" id="na" value="-1.96" step="0.01" oninput="calcNor()"></div>
             <div style="flex:1"><label>b:</label><input type="number" id="nb" value="1.96" step="0.01" oninput="calcNor()"></div>
@@ -596,7 +596,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <footer>
   <div style="max-width:700px;margin:0 auto">
     <p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
-      Probabilidad y Distribuciones · v1.3.1</p>
+      Probabilidad y Distribuciones · v1.3.2</p>
     <p style="margin-bottom:10px">
       <span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br>
       <span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
@@ -818,9 +818,12 @@ function calcNor(){
   const unit=document.getElementById('nor-unit').value,n=Math.max(1,Math.floor(numV('nn',25)));
   const isMean=unit==='mean',sg=isMean?sigma/Math.sqrt(n):sigma,sym=isMean?'x̄':'X';
   document.getElementById('nor-n-row').style.display=isMean?'':'none';
+  document.getElementById('nrl1').textContent=`P(${sym} ≤ x)`;
+  document.getElementById('nrl2').textContent=`P(${sym} ≥ x)`;
+  document.getElementById('nrl3').textContent=`P(a ≤ ${sym} ≤ b)`;
   document.getElementById('nor-case').innerHTML=isMean
     ?`<strong>Media muestral con σ conocida:</strong> x̄ tiene media μ y error estándar σ/√n = ${f4(sg)}. Si la población es normal, el resultado es exacto; en otros casos es una aproximación del Teorema del Límite Central.`
-    :'<strong>Observación individual con σ conocida:</strong> X ~ N(μ, σ²) y Z = (X−μ)/σ.';
+    :'<strong>Observación individual con σ conocida:</strong><br>z₁ = (a−μ)/σ &nbsp;;&nbsp; z₂ = (b−μ)/σ<br>P(a ≤ X ≤ b) = Φ(z₂) − Φ(z₁).';
   const mode=document.querySelector('input[name="nr"]:checked').value;
   const xEl=document.getElementById('nor-x-row'),abEl=document.getElementById('nor-ab-row');
   xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
