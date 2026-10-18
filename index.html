@@ -1,31 +1,34 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Probabilidad y Distribuciones · HumAIno®</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#c8a96e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="HIA Prob">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="./jstat.min.js"></script>
-<script src="./chart.umd.min.js"></script>
+<link href="./manifest.json" rel="manifest"/>
+<meta content="#07070d" id="meta-theme-color" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="HIA Prob" name="apple-mobile-web-app-title"/>
+<link href="./icon-192.png" rel="apple-touch-icon"/>
+<link href="./icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="./icon-512.png" rel="icon" sizes="512x512" type="image/png"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&amp;family=Syne:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/jstat@1.9.6/dist/jstat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#07070d;--surface:#0e0e1a;--surface2:#16162a;--border:#2a2a45;
   --gold:#c8a96e;--gold-dim:#8a6f3e;--cyan:#4fc3c8;
-  --text:#dde0f0;--muted:#666880;--success:#5dba8a;--warn:#e6854a;
+  --text:#dde0f0;--muted:#8b8ea8;--success:#5dba8a;--warn:#e6854a;
   --ff-h:'Cormorant Garamond',Georgia,serif;--ff-u:'Syne',sans-serif;--ff-m:'JetBrains Mono',monospace;
   --r:10px;--hbg:rgba(7,7,13,.85);--cg:rgba(255,255,255,.05);--rh:rgba(255,255,255,.02);
 }
 html.light{
   --bg:#f5f2ec;--surface:#fff;--surface2:#ede8df;--border:#d6cdc0;
-  --gold:#8a5e1e;--gold-dim:#6b4815;--cyan:#1e7a7e;
-  --text:#1c1a2e;--muted:#7a7060;--success:#2a6b4a;--warn:#b04e14;
+  --gold:#7d5318;--gold-dim:#5e3e10;--cyan:#146366;
+  --text:#1c1a2e;--muted:#5a5246;--success:#236141;--warn:#9e430e;
   --hbg:rgba(245,242,236,.90);--cg:rgba(0,0,0,.06);--rh:rgba(0,0,0,.02);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;transition:background-color .25s,border-color .2s,color .2s;}
@@ -72,7 +75,8 @@ main{padding:28px 24px;max-width:1100px;margin:0 auto;}
 label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.04em;}
 input[type=number],input[type=text],select{width:100%;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);font-family:var(--ff-m);font-size:.88rem;padding:8px 12px;border-radius:7px;outline:none;}
-input:focus,select:focus{border-color:var(--gold-dim);}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,169,110,.2);}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 input[type=range]{width:100%;accent-color:var(--gold);}
 .rv{font-family:var(--ff-m);color:var(--gold);font-size:.88rem;}
 .fr{margin-bottom:14px;}
@@ -129,532 +133,520 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 </style>
 </head>
 <body>
-
 <header>
-  <span class="logo">HumAIno®</span>
-  <span style="color:var(--border)">│</span>
-  <h1>Probabilidad y Distribuciones</h1>
-  <span class="badge" style="margin-left:auto">v1.5</span>
-  <button class="thbtn" onclick="toggleTheme()"><span id="thi">☀️</span><span id="thl">Claro</span></button>
+<span class="logo">HumAIno®</span>
+<span style="color:var(--border)">│</span>
+<h1>Probabilidad y Distribuciones</h1>
+<span class="badge" style="margin-left:auto">v1.5</span>
+<button aria-label="Cambiar entre modo oscuro y claro" class="thbtn" id="theme-toggle-btn" onclick="toggleTheme()"><span aria-hidden="true" id="thi">☀️</span><span id="thl">Claro</span></button>
 </header>
-
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="swT(0)">📦 Distribuciones Discretas</button>
-  <button class="tab-btn" onclick="swT(1)">〰️ Distribuciones Continuas</button>
-  <button class="tab-btn" onclick="swT(2)">⚡ Potencia Estadística</button>
-  <button class="tab-btn" onclick="swT(3)">🧭 Pruebas e intervalos</button>
-  <button class="tab-btn" onclick="swT(4)">📖 Guía y FAQ</button>
-</div>
-
+<nav aria-label="Módulos principales" class="tab-bar" role="tablist">
+<button aria-controls="p0" aria-selected="true" class="tab-btn active" onclick="swT(0)" role="tab"><span aria-hidden="true">📦</span> Distribuciones Discretas</button>
+<button aria-controls="p1" aria-selected="false" class="tab-btn" onclick="swT(1)" role="tab"><span aria-hidden="true">〰️</span> Distribuciones Continuas</button>
+<button aria-controls="p2" aria-selected="false" class="tab-btn" onclick="swT(2)" role="tab"><span aria-hidden="true">⚡</span> Potencia Estadística</button>
+<button aria-controls="p3" aria-selected="false" class="tab-btn" onclick="swT(3)" role="tab"><span aria-hidden="true">🧭</span> Pruebas e intervalos</button>
+<button aria-controls="p4" aria-selected="false" class="tab-btn" onclick="swT(4)" role="tab"><span aria-hidden="true">📖</span> Guía y FAQ</button>
+</nav>
 <main>
-
 <!-- ══ P0: DISCRETAS ══ -->
 <section class="panel active" id="p0">
-  <div class="sh"><h2>Distribuciones Discretas</h2>
-    <p>Calcula probabilidades puntuales y acumuladas; visualiza la función de masa de probabilidad</p></div>
-  <div class="subtab-bar">
-    <button class="subtab-btn active" id="sb-bin" onclick="swD('bin')"><span class="sticon">🎯</span><span class="stlabel">Binomial</span></button>
-    <button class="subtab-btn" id="sb-poi" onclick="swD('poi')"><span class="sticon">🔵</span><span class="stlabel">Poisson</span></button>
-    <button class="subtab-btn" id="sb-hyp" onclick="swD('hyp')"><span class="sticon">📦</span><span class="stlabel">Hipergeométrica</span></button>
-    <button class="subtab-btn" id="sb-geo" onclick="swD('geo')"><span class="sticon">🔢</span><span class="stlabel">Geométrica</span></button>
-  </div>
-
-  <!-- BINOMIAL -->
-  <div class="subpanel active" id="d-bin">
-    <div class="ibox"><strong>Binomial B(n, p)</strong> — n ensayos independientes, probabilidad de éxito p constante.<br>
-      <strong>E(X) = np · Var(X) = np(1−p)</strong></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>n (ensayos): <span id="bn-v" class="rv">10</span></label>
-          <input type="range" id="bn" min="1" max="100" value="10" oninput="document.getElementById('bn-v').textContent=this.value;calcBin()"></div>
-        <div class="fr"><label>p (prob. éxito): <span id="bp-v" class="rv">0.50</span></label>
-          <input type="range" id="bp" min="1" max="99" value="50" oninput="document.getElementById('bp-v').textContent=(this.value/100).toFixed(2);calcBin()"></div>
-        <div class="fr"><label>k (valor de interés):</label>
-          <input type="number" id="bk" value="5" min="0" oninput="calcBin()"></div>
-        <div class="between-row">
-          <label>P(a ≤ X ≤ b):</label>
-          <label style="color:var(--gold)">a=</label><input type="number" id="ba" value="3" min="0" style="width:70px" oninput="calcBin()">
-          <label style="color:var(--gold)">b=</label><input type="number" id="bb" value="7" min="0" style="width:70px" oninput="calcBin()">
-          <span id="b-between" class="rv" style="font-size:1rem"></span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Estadísticos</div>
-        <div class="metrics" id="bin-stats"></div>
-        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
-        <div class="probs-row" id="bin-probs"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ctitle">Función de masa de probabilidad P(X = k)</div>
-      <div class="chart-wrap"><canvas id="bin-chart"></canvas></div>
-    </div>
-    <div class="card" id="bin-tbl-card">
-      <div class="ctitle">Tabla de probabilidades</div>
-      <div style="overflow-x:auto" id="bin-tbl"></div>
-    </div>
-  </div>
-
-  <!-- POISSON -->
-  <div class="subpanel" id="d-poi">
-    <div class="ibox"><strong>Poisson Po(λ)</strong> — número de eventos en un intervalo fijo. λ = tasa promedio.<br>
-      <strong>E(X) = λ · Var(X) = λ · σ = √λ</strong></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>λ (tasa promedio): <span id="pl-v" class="rv">3.0</span></label>
-          <input type="range" id="pl" min="1" max="200" value="30" oninput="document.getElementById('pl-v').textContent=(this.value/10).toFixed(1);calcPoi()"></div>
-        <div class="fr"><label>k (valor de interés):</label>
-          <input type="number" id="pk" value="2" min="0" oninput="calcPoi()"></div>
-        <div class="between-row">
-          <label>P(a ≤ X ≤ b):</label>
-          <label style="color:var(--gold)">a=</label><input type="number" id="pa" value="1" min="0" style="width:70px" oninput="calcPoi()">
-          <label style="color:var(--gold)">b=</label><input type="number" id="pb" value="5" min="0" style="width:70px" oninput="calcPoi()">
-          <span id="p-between" class="rv" style="font-size:1rem"></span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Estadísticos</div>
-        <div class="metrics" id="poi-stats"></div>
-        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
-        <div class="probs-row" id="poi-probs"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ctitle">Función de masa de probabilidad P(X = k)</div>
-      <div class="chart-wrap"><canvas id="poi-chart"></canvas></div>
-    </div>
-    <div class="card"><div class="ctitle">Tabla de probabilidades</div><div style="overflow-x:auto" id="poi-tbl"></div></div>
-  </div>
-
-  <!-- HIPERGEOMÉTRICA -->
-  <div class="subpanel" id="d-hyp">
-    <div class="ibox"><strong>Hipergeométrica H(N, K, n)</strong> — muestreo sin reemplazo. N=población, K=éxitos en población, n=tamaño de muestra.<br>
-      <strong>E(X) = nK/N · Var(X) = nK(N−K)(N−n) / [N²(N−1)]</strong></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>N (tamaño de la población):</label><input type="number" id="hn" value="50" min="2" oninput="calcHyp()"></div>
-        <div class="fr"><label>K (éxitos en la población):</label><input type="number" id="hK" value="20" min="0" oninput="calcHyp()"></div>
-        <div class="fr"><label>n (tamaño de muestra):</label><input type="number" id="hn2" value="10" min="1" oninput="calcHyp()"></div>
-        <div class="fr"><label>k (éxitos observados en muestra):</label><input type="number" id="hk" value="4" min="0" oninput="calcHyp()"></div>
-        <div class="between-row">
-          <label>P(a ≤ X ≤ b):</label>
-          <label style="color:var(--gold)">a=</label><input type="number" id="ha" value="2" min="0" style="width:70px" oninput="calcHyp()">
-          <label style="color:var(--gold)">b=</label><input type="number" id="hb" value="6" min="0" style="width:70px" oninput="calcHyp()">
-          <span id="h-between" class="rv" style="font-size:1rem"></span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Estadísticos</div>
-        <div class="metrics" id="hyp-stats"></div>
-        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
-        <div class="probs-row" id="hyp-probs"></div>
-      </div>
-    </div>
-    <div class="card"><div class="ctitle">Función de masa de probabilidad</div><div class="chart-wrap"><canvas id="hyp-chart"></canvas></div></div>
-    <div class="card"><div class="ctitle">Tabla de probabilidades</div><div style="overflow-x:auto" id="hyp-tbl"></div></div>
-  </div>
-
-  <!-- GEOMÉTRICA -->
-  <div class="subpanel" id="d-geo">
-    <div class="ibox"><strong>Geométrica Geo(p)</strong> — número de ensayos hasta el primer éxito.<br>
-      <strong>P(X=k) = (1−p)^(k−1) · p · E(X) = 1/p · Var(X) = (1−p)/p²</strong></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>p (prob. éxito): <span id="gp-v" class="rv">0.30</span></label>
-          <input type="range" id="gp" min="1" max="99" value="30" oninput="document.getElementById('gp-v').textContent=(this.value/100).toFixed(2);calcGeo()"></div>
-        <div class="fr"><label>k (número de ensayos, k ≥ 1):</label>
-          <input type="number" id="gk" value="3" min="1" oninput="calcGeo()"></div>
-        <div class="between-row">
-          <label>P(a ≤ X ≤ b):</label>
-          <label style="color:var(--gold)">a=</label><input type="number" id="ga" value="1" min="1" style="width:70px" oninput="calcGeo()">
-          <label style="color:var(--gold)">b=</label><input type="number" id="gb" value="5" min="1" style="width:70px" oninput="calcGeo()">
-          <span id="g-between" class="rv" style="font-size:1rem"></span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Estadísticos</div>
-        <div class="metrics" id="geo-stats"></div>
-        <div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
-        <div class="probs-row" id="geo-probs"></div>
-      </div>
-    </div>
-    <div class="card"><div class="ctitle">Función de masa de probabilidad</div><div class="chart-wrap"><canvas id="geo-chart"></canvas></div></div>
-    <div class="card"><div class="ctitle">Tabla de probabilidades</div><div style="overflow-x:auto" id="geo-tbl"></div></div>
-  </div>
+<div class="sh"><h2>Distribuciones Discretas</h2>
+<p>Calcula probabilidades puntuales y acumuladas; visualiza la función de masa de probabilidad</p></div>
+<div class="subtab-bar">
+<button class="subtab-btn active" id="sb-bin" onclick="swD('bin')"><span class="sticon">🎯</span><span class="stlabel">Binomial</span></button>
+<button class="subtab-btn" id="sb-poi" onclick="swD('poi')"><span class="sticon">🔵</span><span class="stlabel">Poisson</span></button>
+<button class="subtab-btn" id="sb-hyp" onclick="swD('hyp')"><span class="sticon">📦</span><span class="stlabel">Hipergeométrica</span></button>
+<button class="subtab-btn" id="sb-geo" onclick="swD('geo')"><span class="sticon">🔢</span><span class="stlabel">Geométrica</span></button>
+</div>
+<!-- BINOMIAL -->
+<div class="subpanel active" id="d-bin">
+<div class="ibox"><strong>Binomial B(n, p)</strong> — n ensayos independientes, probabilidad de éxito p constante.<br/>
+<strong>E(X) = np · Var(X) = np(1−p)</strong></div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="bn">n (ensayos): <span class="rv" id="bn-v">10</span></label>
+<input id="bn" max="100" min="1" oninput="document.getElementById('bn-v').textContent=this.value;calcBin()" type="range" value="10"/></div>
+<div class="fr"><label for="bp">p (prob. éxito): <span class="rv" id="bp-v">0.50</span></label>
+<input id="bp" max="99" min="1" oninput="document.getElementById('bp-v').textContent=(this.value/100).toFixed(2);calcBin()" type="range" value="50"/></div>
+<div class="fr"><label for="bk">k (valor de interés):</label>
+<input id="bk" min="0" oninput="calcBin()" type="number" value="5"/></div>
+<div class="between-row">
+<label for="ba">P(a ≤ X ≤ b):</label>
+<label for="ba" style="color:var(--gold)">a=</label><input id="ba" min="0" oninput="calcBin()" style="width:70px" type="number" value="3"/>
+<label for="bb" style="color:var(--gold)">b=</label><input id="bb" min="0" oninput="calcBin()" style="width:70px" type="number" value="7"/>
+<span class="rv" id="b-between" style="font-size:1rem"></span>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Estadísticos</div>
+<div class="metrics" id="bin-stats"></div>
+<div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+<div class="probs-row" id="bin-probs"></div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Función de masa de probabilidad P(X = k)</div>
+<div class="chart-wrap"><canvas id="bin-chart"></canvas></div>
+</div>
+<div class="card" id="bin-tbl-card">
+<div class="ctitle">Tabla de probabilidades</div>
+<div id="bin-tbl" style="overflow-x:auto"></div>
+</div>
+</div>
+<!-- POISSON -->
+<div class="subpanel" id="d-poi">
+<div class="ibox"><strong>Poisson Po(λ)</strong> — número de eventos en un intervalo fijo. λ = tasa promedio.<br/>
+<strong>E(X) = λ · Var(X) = λ · σ = √λ</strong></div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="pl">λ (tasa promedio): <span class="rv" id="pl-v">3.0</span></label>
+<input id="pl" max="200" min="1" oninput="document.getElementById('pl-v').textContent=(this.value/10).toFixed(1);calcPoi()" type="range" value="30"/></div>
+<div class="fr"><label for="pk">k (valor de interés):</label>
+<input id="pk" min="0" oninput="calcPoi()" type="number" value="2"/></div>
+<div class="between-row">
+<label for="pa">P(a ≤ X ≤ b):</label>
+<label for="pa" style="color:var(--gold)">a=</label><input id="pa" min="0" oninput="calcPoi()" style="width:70px" type="number" value="1"/>
+<label for="pb" style="color:var(--gold)">b=</label><input id="pb" min="0" oninput="calcPoi()" style="width:70px" type="number" value="5"/>
+<span class="rv" id="p-between" style="font-size:1rem"></span>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Estadísticos</div>
+<div class="metrics" id="poi-stats"></div>
+<div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+<div class="probs-row" id="poi-probs"></div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Función de masa de probabilidad P(X = k)</div>
+<div class="chart-wrap"><canvas id="poi-chart"></canvas></div>
+</div>
+<div class="card"><div class="ctitle">Tabla de probabilidades</div><div id="poi-tbl" style="overflow-x:auto"></div></div>
+</div>
+<!-- HIPERGEOMÉTRICA -->
+<div class="subpanel" id="d-hyp">
+<div class="ibox"><strong>Hipergeométrica H(N, K, n)</strong> — muestreo sin reemplazo. N=población, K=éxitos en población, n=tamaño de muestra.<br/>
+<strong>E(X) = nK/N · Var(X) = nK(N−K)(N−n) / [N²(N−1)]</strong></div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="hn">N (tamaño de la población):</label><input id="hn" min="2" oninput="calcHyp()" type="number" value="50"/></div>
+<div class="fr"><label for="hK">K (éxitos en la población):</label><input id="hK" min="0" oninput="calcHyp()" type="number" value="20"/></div>
+<div class="fr"><label for="hn2">n (tamaño de muestra):</label><input id="hn2" min="1" oninput="calcHyp()" type="number" value="10"/></div>
+<div class="fr"><label for="hk">k (éxitos observados en muestra):</label><input id="hk" min="0" oninput="calcHyp()" type="number" value="4"/></div>
+<div class="between-row">
+<label for="ha">P(a ≤ X ≤ b):</label>
+<label for="ha" style="color:var(--gold)">a=</label><input id="ha" min="0" oninput="calcHyp()" style="width:70px" type="number" value="2"/>
+<label for="hb" style="color:var(--gold)">b=</label><input id="hb" min="0" oninput="calcHyp()" style="width:70px" type="number" value="6"/>
+<span class="rv" id="h-between" style="font-size:1rem"></span>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Estadísticos</div>
+<div class="metrics" id="hyp-stats"></div>
+<div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+<div class="probs-row" id="hyp-probs"></div>
+</div>
+</div>
+<div class="card"><div class="ctitle">Función de masa de probabilidad</div><div class="chart-wrap"><canvas id="hyp-chart"></canvas></div></div>
+<div class="card"><div class="ctitle">Tabla de probabilidades</div><div id="hyp-tbl" style="overflow-x:auto"></div></div>
+</div>
+<!-- GEOMÉTRICA -->
+<div class="subpanel" id="d-geo">
+<div class="ibox"><strong>Geométrica Geo(p)</strong> — número de ensayos hasta el primer éxito.<br/>
+<strong>P(X=k) = (1−p)^(k−1) · p · E(X) = 1/p · Var(X) = (1−p)/p²</strong></div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="gp">p (prob. éxito): <span class="rv" id="gp-v">0.30</span></label>
+<input id="gp" max="99" min="1" oninput="document.getElementById('gp-v').textContent=(this.value/100).toFixed(2);calcGeo()" type="range" value="30"/></div>
+<div class="fr"><label for="gk">k (número de ensayos, k ≥ 1):</label>
+<input id="gk" min="1" oninput="calcGeo()" type="number" value="3"/></div>
+<div class="between-row">
+<label for="ga">P(a ≤ X ≤ b):</label>
+<label for="ga" style="color:var(--gold)">a=</label><input id="ga" min="1" oninput="calcGeo()" style="width:70px" type="number" value="1"/>
+<label for="gb" style="color:var(--gold)">b=</label><input id="gb" min="1" oninput="calcGeo()" style="width:70px" type="number" value="5"/>
+<span class="rv" id="g-between" style="font-size:1rem"></span>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Estadísticos</div>
+<div class="metrics" id="geo-stats"></div>
+<div class="ctitle" style="margin-top:8px">Probabilidades para X = k</div>
+<div class="probs-row" id="geo-probs"></div>
+</div>
+</div>
+<div class="card"><div class="ctitle">Función de masa de probabilidad</div><div class="chart-wrap"><canvas id="geo-chart"></canvas></div></div>
+<div class="card"><div class="ctitle">Tabla de probabilidades</div><div id="geo-tbl" style="overflow-x:auto"></div></div>
+</div>
 </section>
-
 <!-- ══ P1: CONTINUAS ══ -->
 <section class="panel" id="p1">
-  <div class="sh"><h2>Distribuciones Continuas</h2>
-    <p>Calcula áreas bajo la curva y valores críticos para las distribuciones más importantes</p></div>
-  <div class="subtab-bar">
-    <button class="subtab-btn active" id="cb-nor" onclick="swC('nor')"><span class="sticon">🔔</span><span class="stlabel">Normal</span></button>
-    <button class="subtab-btn" id="cb-t"   onclick="swC('t')">  <span class="sticon">📐</span><span class="stlabel">t-Student</span></button>
-    <button class="subtab-btn" id="cb-chi" onclick="swC('chi')"><span class="sticon">χ²</span><span class="stlabel">Chi-cuadrada</span></button>
-    <button class="subtab-btn" id="cb-f"   onclick="swC('f')">  <span class="sticon">F</span><span class="stlabel">F de Fisher</span></button>
-    <button class="subtab-btn" id="cb-uni" onclick="swC('uni')"><span class="sticon">▭</span><span class="stlabel">Uniforme</span></button>
-    <button class="subtab-btn" id="cb-exp" onclick="swC('exp')"><span class="sticon">📉</span><span class="stlabel">Exponencial</span></button>
-  </div>
-
-  <!-- NORMAL -->
-  <div class="subpanel active" id="c-nor">
-    <div class="ibox" id="nor-case"><strong>Observación individual con σ conocida:</strong><br>z₁ = (a−μ)/σ &nbsp;;&nbsp; z₂ = (b−μ)/σ<br>P(a ≤ X ≤ b) = Φ(z₂) − Φ(z₁).</div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>Variable que se desea calcular</label>
-          <select id="nor-unit" onchange="calcNor()">
-            <option value="individual" selected>Observación individual X</option>
-            <option value="mean">Media muestral (σ conocida)</option>
-            <option value="mean-s">Media muestral (σ desconocida, s y n &gt; 30)</option>
-          </select>
-        </div>
-        <div class="fr"><label>μ (media):</label><input type="number" id="nm" value="0" step="0.1" oninput="calcNor()"></div>
-        <div class="fr"><label id="nor-s-label">σ poblacional conocida:</label><input type="number" id="ns" value="1" min="0.01" step="0.1" oninput="calcNor()"></div>
-        <div class="fr" id="nor-n-row" style="display:none"><label>Tamaño de muestra n:</label><input type="number" id="nn" value="40" min="1" step="1" oninput="calcNor()"></div>
-        <div class="fr"><label>Cálculo</label>
-          <div class="seg">
-            <input type="radio" name="nr" id="nr1" value="le" onchange="calcNor()"><label id="nrl1" for="nr1">P(X ≤ x)</label>
-            <input type="radio" name="nr" id="nr2" value="ge" onchange="calcNor()"><label id="nrl2" for="nr2">P(X ≥ x)</label>
-            <input type="radio" name="nr" id="nr3" value="bt" checked onchange="calcNor()"><label id="nrl3" for="nr3">P(a ≤ X ≤ b)</label>
-          </div>
-        </div>
-        <div id="nor-x-row" class="fr" style="display:none"><label>x:</label><input type="number" id="nx" value="1.96" step="0.01" oninput="calcNor()"></div>
-        <div id="nor-ab-row" class="fr">
-          <div style="display:flex;gap:10px">
-            <div style="flex:1"><label>a:</label><input type="number" id="na" value="-1.96" step="0.01" oninput="calcNor()"></div>
-            <div style="flex:1"><label>b:</label><input type="number" id="nb" value="1.96" step="0.01" oninput="calcNor()"></div>
-          </div>
-        </div>
-        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <label>Valor crítico — dado α, encuentra x_α:</label>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
-            <input type="number" id="nalpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px" oninput="calcNorCrit()">
-            <div class="seg">
-              <input type="radio" name="ntail" id="nt1" value="two" checked onchange="calcNorCrit()"><label for="nt1">Bilateral</label>
-              <input type="radio" name="ntail" id="nt2" value="one" onchange="calcNorCrit()"><label for="nt2">Unilateral</label>
-            </div>
-            <span id="nor-crit" class="rv" style="font-size:1rem">z = 1.9600</span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Resultado</div>
-        <div class="probs-row" id="nor-probs"></div>
-        <div class="ibox" id="nor-std"></div>
-        <div class="chart-wrap" style="height:260px"><canvas id="nor-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- t-STUDENT -->
-  <div class="subpanel" id="c-t">
-    <div class="ibox"><strong>t-Student t(ν)</strong> — ν = grados de libertad. Más pesada que normal; converge a N(0,1) para ν grande.</div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>ν (grados de libertad): <span id="tv-v" class="rv">10</span></label>
-          <input type="range" id="tv" min="1" max="120" value="10" oninput="document.getElementById('tv-v').textContent=this.value;calcT()"></div>
-        <div class="fr"><label>Cálculo</label>
-          <div class="seg">
-            <input type="radio" name="tr" id="tr1" value="le" checked onchange="calcT()"><label for="tr1">P(t ≤ x)</label>
-            <input type="radio" name="tr" id="tr2" value="ge" onchange="calcT()"><label for="tr2">P(t ≥ x)</label>
-            <input type="radio" name="tr" id="tr3" value="bt" onchange="calcT()"><label for="tr3">P(a ≤ t ≤ b)</label>
-          </div>
-        </div>
-        <div id="t-x-row" class="fr"><label>x:</label><input type="number" id="tx" value="2.228" step="0.001" oninput="calcT()"></div>
-        <div id="t-ab-row" class="fr" style="display:none">
-          <div style="display:flex;gap:10px">
-            <div style="flex:1"><label>a:</label><input type="number" id="ta" value="-2.228" step="0.001" oninput="calcT()"></div>
-            <div style="flex:1"><label>b:</label><input type="number" id="tb" value="2.228" step="0.001" oninput="calcT()"></div>
-          </div>
-        </div>
-        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <label>Valor crítico t_α,ν:</label>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
-            <input type="number" id="talpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px" oninput="calcTCrit()">
-            <div class="seg">
-              <input type="radio" name="ttail" id="tt1" value="two" checked onchange="calcTCrit()"><label for="tt1">Bilateral</label>
-              <input type="radio" name="ttail" id="tt2" value="one" onchange="calcTCrit()"><label for="tt2">Unilateral</label>
-            </div>
-            <span id="t-crit" class="rv" style="font-size:1rem">t = 2.228</span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Resultado</div>
-        <div class="probs-row" id="t-probs"></div>
-        <div class="chart-wrap" style="height:260px"><canvas id="t-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CHI-CUADRADA -->
-  <div class="subpanel" id="c-chi">
-    <div class="ibox"><strong>Chi-cuadrada χ²(ν)</strong> — asimétrica positiva. Usada en pruebas de varianza, bondad de ajuste e independencia.</div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>ν (grados de libertad): <span id="cv-v" class="rv">5</span></label>
-          <input type="range" id="cv" min="1" max="60" value="5" oninput="document.getElementById('cv-v').textContent=this.value;calcChi()"></div>
-        <div class="fr"><label>Cálculo</label>
-          <div class="seg">
-            <input type="radio" name="cr" id="cr1" value="le" checked onchange="calcChi()"><label for="cr1">P(χ² ≤ x)</label>
-            <input type="radio" name="cr" id="cr2" value="ge" onchange="calcChi()"><label for="cr2">P(χ² ≥ x)</label>
-            <input type="radio" name="cr" id="cr3" value="bt" onchange="calcChi()"><label for="cr3">P(a ≤ χ² ≤ b)</label>
-          </div>
-        </div>
-        <div id="chi-x-row" class="fr"><label>x:</label><input type="number" id="cx" value="11.07" step="0.01" min="0" oninput="calcChi()"></div>
-        <div id="chi-ab-row" class="fr" style="display:none">
-          <div style="display:flex;gap:10px">
-            <div style="flex:1"><label>a:</label><input type="number" id="ca" value="1" step="0.01" min="0" oninput="calcChi()"></div>
-            <div style="flex:1"><label>b:</label><input type="number" id="cb" value="12" step="0.01" min="0" oninput="calcChi()"></div>
-          </div>
-        </div>
-        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <label>Valor crítico χ²_α,ν:</label>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
-            <input type="number" id="calpha" value="0.05" min="0.001" max="0.999" step="0.001" style="width:100px" oninput="calcChiCrit()">
-            <div class="seg">
-              <input type="radio" name="ctail" id="cht1" value="upper" checked onchange="calcChiCrit()"><label for="cht1">Cola derecha</label>
-              <input type="radio" name="ctail" id="cht2" value="lower" onchange="calcChiCrit()"><label for="cht2">Cola izquierda</label>
-            </div>
-            <span id="chi-crit" class="rv" style="font-size:1rem"></span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Resultado</div>
-        <div class="probs-row" id="chi-probs"></div>
-        <div class="chart-wrap" style="height:260px"><canvas id="chi-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- F de Fisher -->
-  <div class="subpanel" id="c-f">
-    <div class="ibox"><strong>F de Fisher F(ν₁, ν₂)</strong> — cociente de varianzas. Usada en ANOVA y comparación de varianzas.</div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>ν₁ (gl numerador): <span id="f1-v" class="rv">5</span></label>
-          <input type="range" id="fv1" min="1" max="60" value="5" oninput="document.getElementById('f1-v').textContent=this.value;calcF()"></div>
-        <div class="fr"><label>ν₂ (gl denominador): <span id="f2-v" class="rv">20</span></label>
-          <input type="range" id="fv2" min="1" max="120" value="20" oninput="document.getElementById('f2-v').textContent=this.value;calcF()"></div>
-        <div class="fr"><label>Cálculo</label>
-          <div class="seg">
-            <input type="radio" name="fr" id="fr1" value="le" checked onchange="calcF()"><label for="fr1">P(F ≤ x)</label>
-            <input type="radio" name="fr" id="fr2" value="ge" onchange="calcF()"><label for="fr2">P(F ≥ x)</label>
-          </div>
-        </div>
-        <div class="fr"><label>x:</label><input type="number" id="fx" value="2.71" step="0.01" min="0" oninput="calcF()"></div>
-        <div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <label>Valor crítico F_α,ν₁,ν₂ (cola derecha):</label>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
-            <input type="number" id="falpha" value="0.05" min="0.001" max="0.5" step="0.001" style="width:100px" oninput="calcFCrit()">
-            <span id="f-crit" class="rv" style="font-size:1rem"></span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Resultado</div>
-        <div class="probs-row" id="f-probs"></div>
-        <div class="chart-wrap" style="height:260px"><canvas id="f-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- UNIFORME -->
-  <div class="subpanel" id="c-uni">
-    <div class="ibox"><strong>Uniforme U(a,b)</strong> — todos los valores del intervalo tienen la misma densidad. Su estandarización produce media 0 y varianza 1, pero <strong>no</strong> una normal estándar.</div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="g2"><div class="fr"><label>a (mínimo)</label><input type="number" id="ua" value="0" step="0.1" oninput="calcUni()"></div><div class="fr"><label>b (máximo)</label><input type="number" id="ub" value="10" step="0.1" oninput="calcUni()"></div></div>
-        <div class="fr"><label>Cálculo</label><div class="seg">
-          <input type="radio" name="ur" id="ur1" value="le" checked onchange="calcUni()"><label for="ur1">P(X ≤ x)</label>
-          <input type="radio" name="ur" id="ur2" value="ge" onchange="calcUni()"><label for="ur2">P(X ≥ x)</label>
-          <input type="radio" name="ur" id="ur3" value="bt" onchange="calcUni()"><label for="ur3">P(c ≤ X ≤ d)</label>
-        </div></div>
-        <div id="uni-x-row" class="fr"><label>x</label><input type="number" id="ux" value="6" step="0.1" oninput="calcUni()"></div>
-        <div id="uni-cd-row" class="g2" style="display:none"><div class="fr"><label>c</label><input type="number" id="uc" value="2" step="0.1" oninput="calcUni()"></div><div class="fr"><label>d</label><input type="number" id="ud" value="7" step="0.1" oninput="calcUni()"></div></div>
-      </div>
-      <div class="card"><div class="ctitle">Resultado y estandarización</div><div id="uni-stats"></div><div id="uni-probs"></div><div id="uni-std" class="formula"></div><div class="chart-wrap" style="height:250px"><canvas id="uni-chart"></canvas></div></div>
-    </div>
-  </div>
-
-  <!-- EXPONENCIAL -->
-  <div class="subpanel" id="c-exp">
-    <div class="ibox"><strong>Exponencial Exp(λ)</strong> — modela tiempos de espera. Si X ~ Exp(λ), entonces Y = λX ~ Exp(1); esta es su transformación canónica.</div>
-    <div class="g2">
-      <div class="card">
-        <div class="ctitle">Parámetros</div>
-        <div class="fr"><label>λ (tasa)</label><input type="number" id="elam" value="0.5" min="0.001" step="0.1" oninput="calcExp()"></div>
-        <div class="fr"><label>Cálculo</label><div class="seg">
-          <input type="radio" name="er" id="er1" value="le" checked onchange="calcExp()"><label for="er1">P(X ≤ x)</label>
-          <input type="radio" name="er" id="er2" value="ge" onchange="calcExp()"><label for="er2">P(X ≥ x)</label>
-          <input type="radio" name="er" id="er3" value="bt" onchange="calcExp()"><label for="er3">P(a ≤ X ≤ b)</label>
-        </div></div>
-        <div id="exp-x-row" class="fr"><label>x</label><input type="number" id="ex" value="3" min="0" step="0.1" oninput="calcExp()"></div>
-        <div id="exp-ab-row" class="g2" style="display:none"><div class="fr"><label>a</label><input type="number" id="ea" value="1" min="0" step="0.1" oninput="calcExp()"></div><div class="fr"><label>b</label><input type="number" id="eb" value="4" min="0" step="0.1" oninput="calcExp()"></div></div>
-      </div>
-      <div class="card"><div class="ctitle">Resultado y transformación</div><div id="exp-stats"></div><div id="exp-probs"></div><div id="exp-std" class="formula"></div><div class="chart-wrap" style="height:250px"><canvas id="exp-chart"></canvas></div></div>
-    </div>
-  </div>
+<div class="sh"><h2>Distribuciones Continuas</h2>
+<p>Calcula áreas bajo la curva y valores críticos para las distribuciones más importantes</p></div>
+<div class="subtab-bar">
+<button class="subtab-btn active" id="cb-nor" onclick="swC('nor')"><span class="sticon">🔔</span><span class="stlabel">Normal</span></button>
+<button class="subtab-btn" id="cb-t" onclick="swC('t')"> <span class="sticon">📐</span><span class="stlabel">t-Student</span></button>
+<button class="subtab-btn" id="cb-chi" onclick="swC('chi')"><span class="sticon">χ²</span><span class="stlabel">Chi-cuadrada</span></button>
+<button class="subtab-btn" id="cb-f" onclick="swC('f')"> <span class="sticon">F</span><span class="stlabel">F de Fisher</span></button>
+<button class="subtab-btn" id="cb-uni" onclick="swC('uni')"><span class="sticon">▭</span><span class="stlabel">Uniforme</span></button>
+<button class="subtab-btn" id="cb-exp" onclick="swC('exp')"><span class="sticon">📉</span><span class="stlabel">Exponencial</span></button>
+</div>
+<!-- NORMAL -->
+<div class="subpanel active" id="c-nor">
+<div class="ibox" id="nor-case"><strong>Observación individual con σ conocida:</strong><br/>z₁ = (a−μ)/σ  ;  z₂ = (b−μ)/σ<br/>P(a ≤ X ≤ b) = Φ(z₂) − Φ(z₁).</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="nor-unit">Variable que se desea calcular</label>
+<select id="nor-unit" onchange="calcNor()">
+<option selected="" value="individual">Observación individual X</option>
+<option value="mean">Media muestral (σ conocida)</option>
+<option value="mean-s">Media muestral (σ desconocida, s y n &gt; 30)</option>
+</select>
+</div>
+<div class="fr"><label for="nm">μ (media):</label><input id="nm" oninput="calcNor()" step="0.1" type="number" value="0"/></div>
+<div class="fr"><label for="ns" id="nor-s-label">σ poblacional conocida:</label><input id="ns" min="0.01" oninput="calcNor()" step="0.1" type="number" value="1"/></div>
+<div class="fr" id="nor-n-row" style="display:none"><label for="nn">Tamaño de muestra n:</label><input id="nn" min="1" oninput="calcNor()" step="1" type="number" value="40"/></div>
+<div class="fr"><label>Cálculo</label>
+<div class="seg">
+<input id="nr1" name="nr" onchange="calcNor()" type="radio" value="le"/><label for="nr1" id="nrl1">P(X ≤ x)</label>
+<input id="nr2" name="nr" onchange="calcNor()" type="radio" value="ge"/><label for="nr2" id="nrl2">P(X ≥ x)</label>
+<input checked="" id="nr3" name="nr" onchange="calcNor()" type="radio" value="bt"/><label for="nr3" id="nrl3">P(a ≤ X ≤ b)</label>
+</div>
+</div>
+<div class="fr" id="nor-x-row" style="display:none"><label for="nx">x:</label><input id="nx" oninput="calcNor()" step="0.01" type="number" value="1.96"/></div>
+<div class="fr" id="nor-ab-row">
+<div style="display:flex;gap:10px">
+<div style="flex:1"><label for="na">a:</label><input id="na" oninput="calcNor()" step="0.01" type="number" value="-1.96"/></div>
+<div style="flex:1"><label>b:</label><input id="nb" oninput="calcNor()" step="0.01" type="number" value="1.96"/></div>
+</div>
+</div>
+<div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+<label for="nalpha">Valor crítico — dado α, encuentra x_α:</label>
+<div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+<input id="nalpha" max="0.999" min="0.001" oninput="calcNorCrit()" step="0.001" style="width:100px" type="number" value="0.05"/>
+<div class="seg">
+<input checked="" id="nt1" name="ntail" onchange="calcNorCrit()" type="radio" value="two"/><label for="nt1">Bilateral</label>
+<input id="nt2" name="ntail" onchange="calcNorCrit()" type="radio" value="one"/><label for="nt2">Unilateral</label>
+</div>
+<span class="rv" id="nor-crit" style="font-size:1rem">z = 1.9600</span>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Resultado</div>
+<div class="probs-row" id="nor-probs"></div>
+<div class="ibox" id="nor-std"></div>
+<div class="chart-wrap" style="height:260px"><canvas id="nor-chart"></canvas></div>
+</div>
+</div>
+</div>
+<!-- t-STUDENT -->
+<div class="subpanel" id="c-t">
+<div class="ibox"><strong>t-Student t(ν)</strong> — ν = grados de libertad. Más pesada que normal; converge a N(0,1) para ν grande.</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="tv">ν (grados de libertad): <span class="rv" id="tv-v">10</span></label>
+<input id="tv" max="120" min="1" oninput="document.getElementById('tv-v').textContent=this.value;calcT()" type="range" value="10"/></div>
+<div class="fr"><label>Cálculo</label>
+<div class="seg">
+<input checked="" id="tr1" name="tr" onchange="calcT()" type="radio" value="le"/><label for="tr1">P(t ≤ x)</label>
+<input id="tr2" name="tr" onchange="calcT()" type="radio" value="ge"/><label for="tr2">P(t ≥ x)</label>
+<input id="tr3" name="tr" onchange="calcT()" type="radio" value="bt"/><label for="tr3">P(a ≤ t ≤ b)</label>
+</div>
+</div>
+<div class="fr" id="t-x-row"><label for="tx">x:</label><input id="tx" oninput="calcT()" step="0.001" type="number" value="2.228"/></div>
+<div class="fr" id="t-ab-row" style="display:none">
+<div style="display:flex;gap:10px">
+<div style="flex:1"><label for="ta">a:</label><input id="ta" oninput="calcT()" step="0.001" type="number" value="-2.228"/></div>
+<div style="flex:1"><label>b:</label><input id="tb" oninput="calcT()" step="0.001" type="number" value="2.228"/></div>
+</div>
+</div>
+<div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+<label for="talpha">Valor crítico t_α,ν:</label>
+<div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+<input id="talpha" max="0.999" min="0.001" oninput="calcTCrit()" step="0.001" style="width:100px" type="number" value="0.05"/>
+<div class="seg">
+<input checked="" id="tt1" name="ttail" onchange="calcTCrit()" type="radio" value="two"/><label for="tt1">Bilateral</label>
+<input id="tt2" name="ttail" onchange="calcTCrit()" type="radio" value="one"/><label for="tt2">Unilateral</label>
+</div>
+<span class="rv" id="t-crit" style="font-size:1rem">t = 2.228</span>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Resultado</div>
+<div class="probs-row" id="t-probs"></div>
+<div class="chart-wrap" style="height:260px"><canvas id="t-chart"></canvas></div>
+</div>
+</div>
+</div>
+<!-- CHI-CUADRADA -->
+<div class="subpanel" id="c-chi">
+<div class="ibox"><strong>Chi-cuadrada χ²(ν)</strong> — asimétrica positiva. Usada en pruebas de varianza, bondad de ajuste e independencia.</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="cv">ν (grados de libertad): <span class="rv" id="cv-v">5</span></label>
+<input id="cv" max="60" min="1" oninput="document.getElementById('cv-v').textContent=this.value;calcChi()" type="range" value="5"/></div>
+<div class="fr"><label>Cálculo</label>
+<div class="seg">
+<input checked="" id="cr1" name="cr" onchange="calcChi()" type="radio" value="le"/><label for="cr1">P(χ² ≤ x)</label>
+<input id="cr2" name="cr" onchange="calcChi()" type="radio" value="ge"/><label for="cr2">P(χ² ≥ x)</label>
+<input id="cr3" name="cr" onchange="calcChi()" type="radio" value="bt"/><label for="cr3">P(a ≤ χ² ≤ b)</label>
+</div>
+</div>
+<div class="fr" id="chi-x-row"><label for="cx">x:</label><input id="cx" min="0" oninput="calcChi()" step="0.01" type="number" value="11.07"/></div>
+<div class="fr" id="chi-ab-row" style="display:none">
+<div style="display:flex;gap:10px">
+<div style="flex:1"><label for="ca">a:</label><input id="ca" min="0" oninput="calcChi()" step="0.01" type="number" value="1"/></div>
+<div style="flex:1"><label>b:</label><input id="cb" min="0" oninput="calcChi()" step="0.01" type="number" value="12"/></div>
+</div>
+</div>
+<div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+<label for="calpha">Valor crítico χ²_α,ν:</label>
+<div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+<input id="calpha" max="0.999" min="0.001" oninput="calcChiCrit()" step="0.001" style="width:100px" type="number" value="0.05"/>
+<div class="seg">
+<input checked="" id="cht1" name="ctail" onchange="calcChiCrit()" type="radio" value="upper"/><label for="cht1">Cola derecha</label>
+<input id="cht2" name="ctail" onchange="calcChiCrit()" type="radio" value="lower"/><label for="cht2">Cola izquierda</label>
+</div>
+<span class="rv" id="chi-crit" style="font-size:1rem"></span>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Resultado</div>
+<div class="probs-row" id="chi-probs"></div>
+<div class="chart-wrap" style="height:260px"><canvas id="chi-chart"></canvas></div>
+</div>
+</div>
+</div>
+<!-- F de Fisher -->
+<div class="subpanel" id="c-f">
+<div class="ibox"><strong>F de Fisher F(ν₁, ν₂)</strong> — cociente de varianzas. Usada en ANOVA y comparación de varianzas.</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="fv1">ν₁ (gl numerador): <span class="rv" id="f1-v">5</span></label>
+<input id="fv1" max="60" min="1" oninput="document.getElementById('f1-v').textContent=this.value;calcF()" type="range" value="5"/></div>
+<div class="fr"><label for="fv2">ν₂ (gl denominador): <span class="rv" id="f2-v">20</span></label>
+<input id="fv2" max="120" min="1" oninput="document.getElementById('f2-v').textContent=this.value;calcF()" type="range" value="20"/></div>
+<div class="fr"><label>Cálculo</label>
+<div class="seg">
+<input checked="" id="fr1" name="fr" onchange="calcF()" type="radio" value="le"/><label for="fr1">P(F ≤ x)</label>
+<input id="fr2" name="fr" onchange="calcF()" type="radio" value="ge"/><label for="fr2">P(F ≥ x)</label>
+<input id="fr3" name="fr" onchange="calcF()" type="radio" value="bt"/><label for="fr3">P(a ≤ F ≤ b)</label>
+</div>
+</div>
+<div class="fr" id="f-x-row"><label for="fx">x:</label><input id="fx" min="0" oninput="calcF()" step="0.01" type="number" value="2.71"/></div>
+<div class="fr" id="f-ab-row" style="display:none">
+<div style="display:flex;gap:10px">
+<div style="flex:1"><label for="fa">a:</label><input id="fa" min="0" oninput="calcF()" step="0.01" type="number" value="0.50"/></div>
+<div style="flex:1"><label for="fb">b:</label><input id="fb" min="0" oninput="calcF()" step="0.01" type="number" value="2.71"/></div>
+</div>
+</div>
+<div class="fr" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+<label for="falpha">Valor crítico F_α,ν₁,ν₂:</label>
+<div style="display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap">
+<input id="falpha" max="0.999" min="0.001" oninput="calcFCrit()" step="0.001" style="width:100px" type="number" value="0.05"/>
+<div class="seg">
+<input checked="" id="ft1" name="ftail" onchange="calcFCrit()" type="radio" value="upper"/><label for="ft1">Cola derecha</label>
+<input id="ft2" name="ftail" onchange="calcFCrit()" type="radio" value="lower"/><label for="ft2">Cola izquierda</label>
+</div>
+<span class="rv" id="f-crit" style="font-size:1rem"></span>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Resultado</div>
+<div class="probs-row" id="f-probs"></div>
+<div class="chart-wrap" style="height:260px"><canvas id="f-chart"></canvas></div>
+</div>
+</div>
+</div>
+<!-- UNIFORME -->
+<div class="subpanel" id="c-uni">
+<div class="ibox"><strong>Uniforme U(a,b)</strong> — todos los valores del intervalo tienen la misma densidad. Su estandarización produce media 0 y varianza 1, pero <strong>no</strong> una normal estándar.</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="g2"><div class="fr"><label for="ua">a (mínimo)</label><input id="ua" oninput="calcUni()" step="0.1" type="number" value="0"/></div><div class="fr"><label for="ub">b (máximo)</label><input id="ub" oninput="calcUni()" step="0.1" type="number" value="10"/></div></div>
+<div class="fr"><label>Cálculo</label><div class="seg">
+<input checked="" id="ur1" name="ur" onchange="calcUni()" type="radio" value="le"/><label for="ur1">P(X ≤ x)</label>
+<input id="ur2" name="ur" onchange="calcUni()" type="radio" value="ge"/><label for="ur2">P(X ≥ x)</label>
+<input id="ur3" name="ur" onchange="calcUni()" type="radio" value="bt"/><label for="ur3">P(c ≤ X ≤ d)</label>
+</div></div>
+<div class="fr" id="uni-x-row"><label for="ux">x</label><input id="ux" oninput="calcUni()" step="0.1" type="number" value="6"/></div>
+<div class="g2" id="uni-cd-row" style="display:none"><div class="fr"><label for="uc">c</label><input id="uc" oninput="calcUni()" step="0.1" type="number" value="2"/></div><div class="fr"><label for="ud">d</label><input id="ud" oninput="calcUni()" step="0.1" type="number" value="7"/></div></div>
+</div>
+<div class="card"><div class="ctitle">Resultado y estandarización</div><div id="uni-stats"></div><div id="uni-probs"></div><div class="formula" id="uni-std"></div><div class="chart-wrap" style="height:250px"><canvas id="uni-chart"></canvas></div></div>
+</div>
+</div>
+<!-- EXPONENCIAL -->
+<div class="subpanel" id="c-exp">
+<div class="ibox"><strong>Exponencial Exp(λ)</strong> — modela tiempos de espera. Si X ~ Exp(λ), entonces Y = λX ~ Exp(1); esta es su transformación canónica.</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label for="elam">λ (tasa)</label><input id="elam" min="0.001" oninput="calcExp()" step="0.1" type="number" value="0.5"/></div>
+<div class="fr"><label>Cálculo</label><div class="seg">
+<input checked="" id="er1" name="er" onchange="calcExp()" type="radio" value="le"/><label for="er1">P(X ≤ x)</label>
+<input id="er2" name="er" onchange="calcExp()" type="radio" value="ge"/><label for="er2">P(X ≥ x)</label>
+<input id="er3" name="er" onchange="calcExp()" type="radio" value="bt"/><label for="er3">P(a ≤ X ≤ b)</label>
+</div></div>
+<div class="fr" id="exp-x-row"><label for="ex">x</label><input id="ex" min="0" oninput="calcExp()" step="0.1" type="number" value="3"/></div>
+<div class="g2" id="exp-ab-row" style="display:none"><div class="fr"><label for="ea">a</label><input id="ea" min="0" oninput="calcExp()" step="0.1" type="number" value="1"/></div><div class="fr"><label for="eb">b</label><input id="eb" min="0" oninput="calcExp()" step="0.1" type="number" value="4"/></div></div>
+</div>
+<div class="card"><div class="ctitle">Resultado y transformación</div><div id="exp-stats"></div><div id="exp-probs"></div><div class="formula" id="exp-std"></div><div class="chart-wrap" style="height:250px"><canvas id="exp-chart"></canvas></div></div>
+</div>
+</div>
 </section>
-
 <!-- ══ P2: POTENCIA ══ -->
 <section class="panel" id="p2">
-  <div class="sh"><h2>Potencia Estadística</h2>
-    <p>Error tipo II, potencia y curvas para pruebas de una y dos muestras</p></div>
-  <div class="g2">
-    <div class="card">
-      <div class="ctitle">Parámetros</div>
-      <div class="fr"><label>Prueba</label>
-        <div class="seg">
-          <input type="radio" name="pw" id="pw1" value="one" checked onchange="calcPow()"><label for="pw1">Una muestra</label>
-          <input type="radio" name="pw" id="pw2" value="two" onchange="calcPow()"><label for="pw2">Dos muestras</label>
-        </div>
-      </div>
-      <div class="fr"><label>Δ (diferencia a detectar):</label><input type="number" id="pd" value="5" min="0.1" step="0.1" oninput="calcPow()"></div>
-      <div class="fr"><label>σ (desviación estándar):</label><input type="number" id="ps" value="10" min="0.1" step="0.1" oninput="calcPow()"></div>
-      <div class="fr"><label>n (tamaño de muestra; por grupo si son dos muestras): <span id="pn-v" class="rv">30</span></label>
-        <input type="range" id="pn" min="2" max="200" value="30" oninput="document.getElementById('pn-v').textContent=this.value;calcPow()"></div>
-      <div class="fr"><label>α (nivel de significancia):</label>
-        <select id="pow-alpha" onchange="calcPow()">
-          <option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option>
-        </select>
-      </div>
-      <div class="fr"><label>Potencia objetivo:</label>
-        <select id="pow-target" onchange="calcPow()">
-          <option value="0.80" selected>80%</option><option value="0.90">90%</option><option value="0.95">95%</option>
-        </select>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ctitle">Resultados</div>
-      <div class="metrics" id="pow-stats"></div>
-      <div id="pow-alert"></div>
-      <div id="pow-guide" class="guided"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ctitle">Curva de Potencia (1−β vs n)</div>
-    <div class="chart-wrap" style="height:320px"><canvas id="pow-chart"></canvas></div>
-  </div>
+<div class="sh"><h2>Potencia Estadística</h2>
+<p>Error tipo II, potencia y curvas para pruebas de una y dos muestras</p></div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Parámetros</div>
+<div class="fr"><label>Prueba</label>
+<div class="seg">
+<input checked="" id="pw1" name="pw" onchange="calcPow()" type="radio" value="one"/><label for="pw1">Una muestra</label>
+<input id="pw2" name="pw" onchange="calcPow()" type="radio" value="two"/><label for="pw2">Dos muestras</label>
+</div>
+</div>
+<div class="fr"><label for="pd">Δ (diferencia a detectar):</label><input id="pd" min="0.1" oninput="calcPow()" step="0.1" type="number" value="5"/></div>
+<div class="fr"><label for="ps">σ (desviación estándar):</label><input id="ps" min="0.1" oninput="calcPow()" step="0.1" type="number" value="10"/></div>
+<div class="fr"><label for="pn">n (tamaño de muestra; por grupo si son dos muestras): <span class="rv" id="pn-v">30</span></label>
+<input id="pn" max="200" min="2" oninput="document.getElementById('pn-v').textContent=this.value;calcPow()" type="range" value="30"/></div>
+<div class="fr"><label for="pow-alpha">α (nivel de significancia):</label>
+<select id="pow-alpha" onchange="calcPow()">
+<option value="0.01">0.01</option><option selected="" value="0.05">0.05</option><option value="0.10">0.10</option>
+</select>
+</div>
+<div class="fr"><label for="pow-target">Potencia objetivo:</label>
+<select id="pow-target" onchange="calcPow()">
+<option selected="" value="0.80">80%</option><option value="0.90">90%</option><option value="0.95">95%</option>
+</select>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Resultados</div>
+<div class="metrics" id="pow-stats"></div>
+<div id="pow-alert"></div>
+<div class="guided" id="pow-guide"></div>
+</div>
+</div>
+<div class="card">
+<div class="ctitle">Curva de Potencia (1−β vs n)</div>
+<div class="chart-wrap" style="height:320px"><canvas id="pow-chart"></canvas></div>
+</div>
 </section>
-
 <!-- ══ P3: INFERENCIA ══ -->
 <section class="panel" id="p3">
-  <div class="sh"><h2>Pruebas de hipótesis e intervalos de confianza</h2>
-    <p>Selecciona la distribución de referencia y desarrolla conjuntamente la prueba y la estimación</p></div>
-  <div class="subtab-bar">
-    <button class="subtab-btn active" id="if-z" onclick="setInfFamily('z')"><span class="sticon">Z</span><span class="stlabel">Normal Z</span></button>
-    <button class="subtab-btn" id="if-t" onclick="setInfFamily('t')"><span class="sticon">t</span><span class="stlabel">t-Student</span></button>
-    <button class="subtab-btn" id="if-chi" onclick="setInfFamily('chi')"><span class="sticon">χ²</span><span class="stlabel">Ji-cuadrada</span></button>
-    <button class="subtab-btn" id="if-f" onclick="setInfFamily('f')"><span class="sticon">F</span><span class="stlabel">F de Fisher</span></button>
-  </div>
-  <div class="g2">
-    <div class="card">
-      <div class="ctitle">Procedimiento</div>
-      <div class="fr"><label>Selecciona el caso</label>
-        <select id="inf-type" onchange="buildInf()">
-          <option value="mean1z">Media de una muestra — Z (σ conocida)</option>
-          <option value="mean1zS">Media de una muestra — Z (s, n &gt; 30)</option>
-          <option value="prop1">Una proporción — Z</option>
-          <option value="prop2">Dos proporciones — Z</option>
-        </select>
-      </div>
-      <div class="fr" id="inf-alt-row"><label>Hipótesis alternativa</label>
-        <select id="inf-alt" onchange="calcInf()">
-          <option value="two">Bilateral (≠)</option>
-          <option value="gt">Cola derecha (&gt;)</option>
-          <option value="lt">Cola izquierda (&lt;)</option>
-        </select>
-      </div>
-      <div class="fr"><label>Nivel de significancia α</label>
-        <select id="inf-alpha" onchange="calcInf()"><option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option></select>
-      </div>
-      <div id="inf-inputs"></div>
-      <button class="btn" onclick="calcInf()">⚡ Calcular inferencia</button>
-    </div>
-    <div class="card">
-      <div class="ctitle">Resultados</div>
-      <div class="modebar">
-        <button class="modebtn active" id="inf-compact-btn" onclick="setInfMode(false)">Compacto</button>
-        <button class="modebtn" id="inf-guided-btn" onclick="setInfMode(true)">Guiado</button>
-      </div>
-      <div id="inf-result"></div>
-      <div id="inf-guide" class="guided" style="display:none"></div>
-    </div>
-  </div>
-  <div class="ibox"><strong>Supuestos:</strong> independencia de las observaciones; normalidad aproximada o tamaño de muestra suficiente para medias; conteos esperados adecuados para proporciones; normalidad poblacional para inferencia sobre varianzas.</div>
+<div class="sh"><h2>Pruebas de hipótesis e intervalos de confianza</h2>
+<p>Selecciona la distribución de referencia y desarrolla conjuntamente la prueba y la estimación</p></div>
+<div class="subtab-bar">
+<button class="subtab-btn active" id="if-z" onclick="setInfFamily('z')"><span class="sticon">Z</span><span class="stlabel">Normal Z</span></button>
+<button class="subtab-btn" id="if-t" onclick="setInfFamily('t')"><span class="sticon">t</span><span class="stlabel">t-Student</span></button>
+<button class="subtab-btn" id="if-chi" onclick="setInfFamily('chi')"><span class="sticon">χ²</span><span class="stlabel">Ji-cuadrada</span></button>
+<button class="subtab-btn" id="if-f" onclick="setInfFamily('f')"><span class="sticon">F</span><span class="stlabel">F de Fisher</span></button>
+</div>
+<div class="g2">
+<div class="card">
+<div class="ctitle">Procedimiento</div>
+<div class="fr"><label for="inf-type">Selecciona el caso</label>
+<select id="inf-type" onchange="buildInf()">
+<option value="mean1z">Media de una muestra — Z (σ conocida)</option>
+<option value="mean1zS">Media de una muestra — Z (s, n &gt; 30)</option>
+<option value="prop1">Una proporción — Z</option>
+<option value="prop2">Dos proporciones — Z</option>
+</select>
+</div>
+<div class="fr" id="inf-alt-row"><label for="inf-alt">Hipótesis alternativa</label>
+<select id="inf-alt" onchange="calcInf()">
+<option value="two">Bilateral (≠)</option>
+<option value="gt">Cola derecha (&gt;)</option>
+<option value="lt">Cola izquierda (&lt;)</option>
+</select>
+</div>
+<div class="fr"><label for="inf-alpha">Nivel de significancia α</label>
+<select id="inf-alpha" onchange="calcInf()"><option value="0.01">0.01</option><option selected="" value="0.05">0.05</option><option value="0.10">0.10</option></select>
+</div>
+<div id="inf-inputs"></div>
+<button class="btn" onclick="calcInf()">⚡ Calcular inferencia</button>
+</div>
+<div class="card">
+<div class="ctitle">Resultados</div>
+<div class="modebar">
+<button class="modebtn active" id="inf-compact-btn" onclick="setInfMode(false)">Compacto</button>
+<button class="modebtn" id="inf-guided-btn" onclick="setInfMode(true)">Guiado</button>
+</div>
+<div id="inf-result"></div>
+<div class="guided" id="inf-guide" style="display:none"></div>
+</div>
+</div>
+<div class="ibox"><strong>Supuestos:</strong> independencia de las observaciones; normalidad aproximada o tamaño de muestra suficiente para medias; conteos esperados adecuados para proporciones; normalidad poblacional para inferencia sobre varianzas.</div>
 </section>
-
-
 <!-- v1.5 · Guía y FAQ -->
 <section class="panel" id="p4">
-  <div class="sh"><h2>Guía rápida y preguntas frecuentes</h2><p>Manual práctico para el aprendizaje autónomo de probabilidad e inferencia estadística</p></div>
-  <div class="card"><div class="ctitle">Cómo usar la aplicación</div>
-    <ol style="line-height:1.9;padding-left:22px">
-      <li>Selecciona un módulo en el menú superior.</li>
-      <li>Elige una distribución o un procedimiento estadístico.</li>
-      <li>Introduce los parámetros y verifica unidades, restricciones y supuestos.</li>
-      <li>Examina la probabilidad, gráfico, estadísticos e interpretación.</li>
-      <li>En inferencia, selecciona <strong>Guiado</strong> para estudiar el cálculo paso a paso; <strong>Compacto</strong> para una consulta rápida.</li>
-    </ol>
-  </div>
-  <div class="g2">
-    <div class="card"><div class="ctitle">Distribuciones</div><p>En <strong>discretas</strong>, k representa un conteo entero: P(X=k), P(X≤k) y P(X≥k). En <strong>continuas</strong>, la probabilidad corresponde al área bajo la curva; la probabilidad exacta en un solo punto es cero.</p></div>
-    <div class="card"><div class="ctitle">Potencia</div><p>Introduce Δ, σ, tamaño muestral y α. La app presenta 1−β y n objetivo, mediante <strong>aproximación normal para pruebas bilaterales</strong>. Para dos muestras, n se interpreta <strong>por grupo</strong>; los cálculos presuponen grupos independientes de igual tamaño y desviación común.</p></div>
-    <div class="card"><div class="ctitle">Inferencia</div><p>Elige familia Z, t, χ² o F, define H₁ y α. El valor p se compara con α; <strong>no rechazar H₀</strong> no demuestra que H₀ sea verdadera. Los intervalos mostrados son <strong>bilaterales</strong>, incluso si la prueba es unilateral.</p></div>
-    <div class="card"><div class="ctitle">Supuestos</div><p>Comprueba independencia, mecanismo de muestreo y distribución de datos. Para χ² revisa las frecuencias esperadas. En varianzas, la inferencia clásica χ²/F es particularmente sensible a la falta de normalidad.</p></div>
-  </div>
-  <div class="card"><div class="ctitle">Preguntas frecuentes (FAQ)</div>
-    <div style="display:grid;gap:12px">
-      <details><summary><strong>¿Qué significan α, β y potencia?</strong></summary><p>α es el riesgo nominal de error tipo I, β es la probabilidad de error tipo II bajo un efecto especificado y la potencia es 1−β.</p></details>
-      <details><summary><strong>¿Cuándo elijo Z o t?</strong></summary><p>Para la media, Z es apropiada con σ poblacional conocida; t utiliza s muestral bajo los supuestos correspondientes. La aproximación Z con s y n grande es opcional, pero t suele ser la elección más robusta para una media con σ desconocida.</p></details>
-      <details><summary><strong>¿Qué significa p &lt; 0.05?</strong></summary><p>Con α=0.05, el resultado es estadísticamente significativo bajo el modelo; no indica que H₀ tenga un 5% de probabilidad de ser verdadera.</p></details>
-      <details><summary><strong>¿Una prueba unilateral cambia el intervalo de confianza?</strong></summary><p>Sí, la correspondencia exacta requiere un límite unilateral del nivel adecuado. La app identifica expresamente sus intervalos bilaterales para evitar interpretaciones equivocadas.</p></details>
-      <details><summary><strong>¿Por qué las frecuencias esperadas importan en χ²?</strong></summary><p>Porque la referencia χ² es aproximada. Con esperadas pequeñas puede ser inadecuada; evalúa combinar categorías justificadamente o aplicar un método exacto.</p></details>
-      <details><summary><strong>¿La potencia es exacta para pruebas t?</strong></summary><p>No. Este módulo implementa una aproximación Z bilateral. Para análisis exactos basados en t se necesita la distribución t no central.</p></details>
-      <details><summary><strong>¿Se puede usar sin conexión?</strong></summary><p>Sí, después de cargar la app y completar la instalación de recursos PWA. Los archivos de Google Fonts podrían no estar disponibles en el primer uso desconectado.</p></details>
-    </div>
-  </div>
-  <div class="ibox">La aplicación sirve como recurso didáctico; la validez de una inferencia depende del diseño, los datos y los supuestos, no solamente del valor p.</div>
+<div class="sh"><h2>Guía rápida y preguntas frecuentes</h2><p>Manual práctico para el aprendizaje autónomo de probabilidad e inferencia estadística</p></div>
+<div class="card"><div class="ctitle">Cómo usar la aplicación</div>
+<ol style="line-height:1.9;padding-left:22px">
+<li>Selecciona un módulo en el menú superior.</li>
+<li>Elige una distribución o un procedimiento estadístico.</li>
+<li>Introduce los parámetros y verifica unidades, restricciones y supuestos.</li>
+<li>Examina la probabilidad, gráfico, estadísticos e interpretación.</li>
+<li>En inferencia, selecciona <strong>Guiado</strong> para estudiar el cálculo paso a paso; <strong>Compacto</strong> para una consulta rápida.</li>
+</ol>
+</div>
+<div class="g2">
+<div class="card"><div class="ctitle">Distribuciones</div><p>En <strong>discretas</strong>, k representa un conteo entero: P(X=k), P(X≤k) y P(X≥k). En <strong>continuas</strong>, la probabilidad corresponde al área bajo la curva; la probabilidad exacta en un solo punto es cero.</p></div>
+<div class="card"><div class="ctitle">Potencia</div><p>Introduce Δ, σ, tamaño muestral y α. La app presenta 1−β y n objetivo, mediante <strong>aproximación normal para pruebas bilaterales</strong>. Para dos muestras, n se interpreta <strong>por grupo</strong>; los cálculos presuponen grupos independientes de igual tamaño y desviación común.</p></div>
+<div class="card"><div class="ctitle">Inferencia</div><p>Elige familia Z, t, χ² o F, define H₁ y α. El valor p se compara con α; <strong>no rechazar H₀</strong> no demuestra que H₀ sea verdadera. Los intervalos mostrados son <strong>bilaterales</strong>, incluso si la prueba es unilateral.</p></div>
+<div class="card"><div class="ctitle">Supuestos</div><p>Comprueba independencia, mecanismo de muestreo y distribución de datos. Para χ² revisa las frecuencias esperadas. En varianzas, la inferencia clásica χ²/F es particularmente sensible a la falta de normalidad.</p></div>
+</div>
+<div class="card"><div class="ctitle">Preguntas frecuentes (FAQ)</div>
+<div style="display:grid;gap:12px">
+<details><summary><strong>¿Qué significan α, β y potencia?</strong></summary><p>α es el riesgo nominal de error tipo I, β es la probabilidad de error tipo II bajo un efecto especificado y la potencia es 1−β.</p></details>
+<details><summary><strong>¿Cuándo elijo Z o t?</strong></summary><p>Para la media, Z es apropiada con σ poblacional conocida; t utiliza s muestral bajo los supuestos correspondientes. La aproximación Z con s y n grande es opcional, pero t suele ser la elección más robusta para una media con σ desconocida.</p></details>
+<details><summary><strong>¿Qué significa p &lt; 0.05?</strong></summary><p>Con α=0.05, el resultado es estadísticamente significativo bajo el modelo; no indica que H₀ tenga un 5% de probabilidad de ser verdadera.</p></details>
+<details><summary><strong>¿Una prueba unilateral cambia el intervalo de confianza?</strong></summary><p>Sí, la correspondencia exacta requiere un límite unilateral del nivel adecuado. La app identifica expresamente sus intervalos bilaterales para evitar interpretaciones equivocadas.</p></details>
+<details><summary><strong>¿Por qué las frecuencias esperadas importan en χ²?</strong></summary><p>Porque la referencia χ² es aproximada. Con esperadas pequeñas puede ser inadecuada; evalúa combinar categorías justificadamente o aplicar un método exacto.</p></details>
+<details><summary><strong>¿La potencia es exacta para pruebas t?</strong></summary><p>No. Este módulo implementa una aproximación Z bilateral. Para análisis exactos basados en t se necesita la distribución t no central.</p></details>
+<details><summary><strong>¿Se puede usar sin conexión?</strong></summary><p>Sí, después de cargar la app y completar la instalación de recursos PWA. Los archivos de Google Fonts podrían no estar disponibles en el primer uso desconectado.</p></details>
+</div>
+</div>
+<div class="ibox">La aplicación sirve como recurso didáctico; la validez de una inferencia depende del diseño, los datos y los supuestos, no solamente del valor p.</div>
 </section>
-
 </main>
-
 <footer>
-  <div style="max-width:700px;margin:0 auto">
-    <p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
+<div style="max-width:700px;margin:0 auto">
+<p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
       Probabilidad y Distribuciones · v1.5</p>
-    <p style="margin-bottom:10px">
-      <span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br>
-      <span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
-    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es" target="_blank"
-       style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+<p style="margin-bottom:10px">
+<span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br/>
+<span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;
               background:rgba(200,169,110,.08);border:1px solid var(--border);
-              border-radius:8px;padding:8px 14px;margin-bottom:12px">
-      <img src="https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png" alt="CC BY-NC-ND 4.0" style="height:22px;border-radius:3px">
-      <span style="font-size:.78rem;color:var(--muted);line-height:1.4">
-        Licencia <strong style="color:var(--gold)">CC BY-NC-ND 4.0</strong> Internacional<br>
+              border-radius:8px;padding:8px 14px;margin-bottom:12px" target="_blank">
+<svg aria-label="CC BY-NC-ND 4.0" height="23" role="img" style="border-radius:3px;flex-shrink:0" viewbox="0 0 88 31" width="66" xmlns="http://www.w3.org/2000/svg"><rect fill="#1c1a2e" height="31" rx="3" stroke="#c8a96e" stroke-width="1.5" width="88"></rect><text fill="#c8a96e" font-family="monospace,sans-serif" font-size="9.5" font-weight="bold" text-anchor="middle" x="44" y="13">CC BY-NC-ND</text><text fill="#dde0f0" font-family="monospace,sans-serif" font-size="8" text-anchor="middle" x="44" y="24">4.0 INTL</text></svg>
+<span style="font-size:.78rem;color:var(--muted);line-height:1.4">
+        Licencia <strong style="color:var(--gold)">CC BY-NC-ND 4.0</strong> Internacional<br/>
         Uso académico libre · citar al autor · sin modificaciones · sin uso comercial</span>
-    </a>
-    <p style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:8px">
-      Asistencia de IA: <strong>Claude</strong> (Anthropic) vía <strong>HumAIno®</strong><br>
-      <strong>HumAIno®</strong> marca registrada IMPI · Reg. 3019130 · Titular: Lilian Dolores Chel Guerrero · Vigencia: 2036<br>
+</a>
+<p style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:8px">
+      Asistencia de IA: <strong>Claude</strong> (Anthropic) vía <strong>HumAIno®</strong><br/>
+<strong>HumAIno®</strong> marca registrada IMPI · Reg. 3019130 · Titular: Lilian Dolores Chel Guerrero · Vigencia: 2036<br/>
       Prohibida modificación, redistribución o uso comercial sin autorización expresa.</p>
-    <p style="font-size:.72rem;color:var(--border)">
-      <a href="https://humaino.com" target="_blank">humaino.com</a> · Mérida, Yucatán, México</p>
-  </div>
+<p style="font-size:.72rem;color:var(--border)">
+<a href="https://humaino.com" target="_blank">humaino.com</a> · Mérida, Yucatán, México</p>
+</div>
 </footer>
-
 <script>
 /* ══ THEME ═══════════════════════════════════════════════════════ */
 let isDark=true;
@@ -663,18 +655,26 @@ function toggleTheme(){
   document.documentElement.classList.toggle('light',!isDark);
   document.getElementById('thi').textContent=isDark?'☀️':'🌙';
   document.getElementById('thl').textContent=isDark?'Claro':'Oscuro';
-  localStorage.setItem('theme-prob',isDark?'dark':'light');
+  const metaTC=document.getElementById('meta-theme-color');
+  if(metaTC)metaTC.setAttribute('content',isDark?'#07070d':'#f5f2ec');
+  try{localStorage.setItem('theme-prob',isDark?'dark':'light');}catch(e){}
   refreshAll();
 }
 const cg=()=>isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)';
-const ct=()=>isDark?'#666880':'#9a9080';
+const ct=()=>isDark?'#8b8ea8':'#5a5246';
+const cGold=()=>isDark?'#c8a96e':'#7d5318';
+const cGoldFill=()=>isDark?'rgba(200,169,110,.95)':'rgba(125,83,24,.88)';
+const cCyan=()=>isDark?'#4fc3c8':'#146366';
+const cCyanBar=()=>isDark?'rgba(79,195,200,.55)':'rgba(20,99,102,.55)';
+const cCyanBorder=()=>isDark?'rgba(79,195,200,.9)':'rgba(20,99,102,.9)';
+const cCyanArea=()=>isDark?'rgba(79,195,200,.25)':'rgba(20,99,102,.20)';
 const chartOpts=(title)=>({responsive:true,maintainAspectRatio:false,
-  plugins:{legend:{display:false},title:{display:!!title,text:title,color:'#c8a96e',font:{size:12}}},
+  plugins:{legend:{display:false},title:{display:!!title,text:title,color:cGold(),font:{size:12}}},
   scales:{x:{ticks:{color:ct(),font:{size:11}},grid:{color:cg()}},y:{ticks:{color:ct(),font:{size:11}},grid:{color:cg()},beginAtZero:true}}});
 
 /* ══ NAVIGATION ══════════════════════════════════════════════════ */
 const panels=document.querySelectorAll('.panel'),tabBtns=document.querySelectorAll('.tab-btn');
-function swT(i){panels.forEach((p,j)=>p.classList.toggle('active',j===i));tabBtns.forEach((b,j)=>b.classList.toggle('active',j===i));}
+function swT(i){panels.forEach((p,j)=>p.classList.toggle('active',j===i));tabBtns.forEach((b,j)=>{b.classList.toggle('active',j===i);b.setAttribute('aria-selected',j===i?'true':'false');});}
 function swD(w){['bin','poi','hyp','geo'].forEach(id=>{
   document.getElementById('d-'+id).classList.toggle('active',id===w);
   document.getElementById('sb-'+id).classList.toggle('active',id===w);
@@ -713,8 +713,8 @@ function drawDiscChart(id,labels,probs,hiIdx){
   const el=document.getElementById(id+'-chart');
   if(!el)return;
   if(discCharts[id])discCharts[id].destroy();
-  const colors=probs.map((_,i)=>i===hiIdx?'rgba(200,169,110,.95)':'rgba(79,195,200,.55)');
-  const borders=probs.map((_,i)=>i===hiIdx?'#c8a96e':'rgba(79,195,200,.9)');
+  const colors=probs.map((_,i)=>i===hiIdx?cGoldFill():cCyanBar());
+  const borders=probs.map((_,i)=>i===hiIdx?cGold():cCyanBorder());
   discCharts[id]=new Chart(el.getContext('2d'),{
     type:'bar',
     data:{labels:labels.map(String),datasets:[{data:probs,backgroundColor:colors,borderColor:borders,borderWidth:1.5}]},
@@ -734,11 +734,11 @@ function discTable(id,ks,pmf,cdf,hiK){
 
 /* ══ BINOMIAL ════════════════════════════════════════════════════ */
 function calcBin(){
-  const n=+document.getElementById('bn').value;
-  const p=document.getElementById('bp').value/100;
-  const k=Math.max(0,Math.min(n,+document.getElementById('bk').value||0));
-  const a=Math.max(0,+document.getElementById('ba').value||0);
-  const b=Math.min(n,+document.getElementById('bb').value||0);
+  const n=Math.max(1,Math.floor(numV('bn',10)));
+  const p=numV('bp',50)/100;
+  const k=Math.max(0,Math.min(n,Math.floor(numV('bk',0))));
+  const a=Math.max(0,Math.floor(numV('ba',0)));
+  const b=Math.min(n,Math.floor(numV('bb',n)));
   const pmf=k=>jStat.binomial.pdf(k,n,p);
   const cdf=k=>k<0?0:jStat.binomial.cdf(k,n,p);
   const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
@@ -758,18 +758,19 @@ function calcBin(){
 
 /* ══ POISSON ═════════════════════════════════════════════════════ */
 function calcPoi(){
-  const lam=document.getElementById('pl').value/10;
-  const k=Math.max(0,+document.getElementById('pk').value||0);
-  const a=Math.max(0,+document.getElementById('pa').value||0);
-  const b=Math.max(0,+document.getElementById('pb').value||0);
+  const lam=numV('pl',30)/10;
+  const k=Math.max(0,Math.floor(numV('pk',0)));
+  const a=Math.max(0,Math.floor(numV('pa',0)));
+  const b=Math.max(0,Math.floor(numV('pb',0)));
   const pmf=k=>jStat.poisson.pdf(k,lam);
   const cdf=k=>k<0?0:jStat.poisson.cdf(k,lam);
   const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
   const bet=a<=b?cdf(b)-cdf(a-1):0;
   document.getElementById('p-between').textContent=`= ${f4(bet)}`;
+  const poiMode=(Number.isInteger(lam)&&lam>=1)?`${lam-1} y ${lam}`:String(Math.floor(lam));
   document.getElementById('poi-stats').innerHTML=mH([
     {l:'λ (E(X) y Var)',v:lam.toFixed(2)},{l:'σ = √λ',v:Math.sqrt(lam).toFixed(4)},
-    {l:'Moda',v:Math.floor(lam)+''}]);
+    {l:'Moda',v:poiMode}]);
   document.getElementById('poi-probs').innerHTML=probBoxes([
     {l:'P(X = k)',v:f4(pk),main:true},{l:'P(X ≤ k)',v:f4(le)},{l:'P(X ≥ k)',v:f4(ge)}]);
   const maxK=Math.max(k+5,Math.ceil(lam+4*Math.sqrt(lam)+5));
@@ -780,10 +781,10 @@ function calcPoi(){
 
 /* ══ HIPERGEOMÉTRICA ═════════════════════════════════════════════ */
 function calcHyp(){
-  const N=numV('hn',50);
-  const K=Math.min(numV('hK',20),N);
-  const n=Math.min(numV('hn2',10),N);
-  const kRaw=numV('hk',0);
+  const N=Math.max(2,Math.floor(numV('hn',50)));
+  const K=Math.max(0,Math.min(Math.floor(numV('hK',20)),N));
+  const n=Math.max(1,Math.min(Math.floor(numV('hn2',10)),N));
+  const kRaw=Math.floor(numV('hk',0));
   const lo=Math.max(0,n+K-N),hi=Math.min(K,n);
   const k=Math.max(lo,Math.min(hi,kRaw));
   const a=Math.max(lo,document.getElementById('ha').value===''?lo:+document.getElementById('ha').value);
@@ -806,10 +807,10 @@ function calcHyp(){
 
 /* ══ GEOMÉTRICA ══════════════════════════════════════════════════ */
 function calcGeo(){
-  const p=document.getElementById('gp').value/100;
-  const k=Math.max(1,+document.getElementById('gk').value||3);
-  const a=Math.max(1,+document.getElementById('ga').value||1);
-  const b=Math.max(1,+document.getElementById('gb').value||5);
+  const p=numV('gp',30)/100;
+  const k=Math.max(1,Math.floor(numV('gk',3)));
+  const a=Math.max(1,Math.floor(numV('ga',1)));
+  const b=Math.max(1,Math.floor(numV('gb',5)));
   const pmf=kk=>geomPMF(kk,p);
   const cdf=kk=>geomCDF(kk,p);
   const pk=pmf(k),le=cdf(k),ge=1-cdf(k-1);
@@ -818,13 +819,13 @@ function calcGeo(){
   const mu=1/p,vr=(1-p)/p/p;
   document.getElementById('geo-stats').innerHTML=mH([
     {l:'E(X) = 1/p',v:mu.toFixed(4)},{l:'Var(X)',v:vr.toFixed(4)},{l:'σ',v:Math.sqrt(vr).toFixed(4)},
-    {l:'P(X=1)',v:p.toFixed(4)}]);
+    {l:'Moda',v:'1'},{l:'P(X=1)',v:p.toFixed(4)}]);
   document.getElementById('geo-probs').innerHTML=probBoxes([
     {l:'P(X = k)',v:f4(pk),main:true},{l:'P(X ≤ k)',v:f4(le)},{l:'P(X ≥ k)',v:f4(ge)}]);
-  const maxK=Math.max(k+5,Math.ceil(mu+4*Math.sqrt(vr)));
-  const ks=Array.from({length:Math.min(maxK,40)},(_,i)=>i+1);
+  const maxK=Math.min(Math.max(k+5,Math.ceil(mu+4*Math.sqrt(vr))),60);
+  const ks=Array.from({length:maxK},(_,i)=>i+1);
   drawDiscChart('geo',ks,ks.map(pmf),k-1);
-  discTable('geo',ks.slice(0,20),pmf,cdf,k);
+  discTable('geo',ks.slice(0,Math.max(20,Math.min(k+2,maxK))),pmf,cdf,k);
 }
 
 /* ══ CONTINUOUS CHART ════════════════════════════════════════════ */
@@ -835,9 +836,9 @@ function drawContChart(id,xs,ys,fillLo,fillHi,yMax){
   const fillData=xs.map((x,i)=>(x>=fillLo&&x<=fillHi)?ys[i]:null);
   contCharts[id]=new Chart(el.getContext('2d'),{
     data:{datasets:[
-      {type:'line',data:ys,borderColor:'#c8a96e',borderWidth:2.5,pointRadius:0,fill:false,tension:0.3},
-      {type:'line',data:fillData,borderColor:'rgba(79,195,200,.6)',borderWidth:1,
-       backgroundColor:'rgba(79,195,200,.25)',fill:'origin',pointRadius:0,tension:0.3,spanGaps:false}
+      {type:'line',data:ys,borderColor:cGold(),borderWidth:2.5,pointRadius:0,fill:false,tension:0.3},
+      {type:'line',data:fillData,borderColor:cCyanBorder(),borderWidth:1,
+       backgroundColor:cCyanArea(),fill:'origin',pointRadius:0,tension:0.3,spanGaps:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
@@ -866,7 +867,7 @@ function calcNor(){
   const mode=document.querySelector('input[name="nr"]:checked').value;
   const xEl=document.getElementById('nor-x-row'),abEl=document.getElementById('nor-ab-row');
   xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
-  const x=+document.getElementById('nx').value||0;
+  const x=numV('nx',1.96);
   const a_=numV('na',-1.96);
   const b_=numV('nb',1.96);
   const CDF=v=>jStat.normal.cdf(v,mu,sg);
@@ -908,7 +909,7 @@ function calcT(){
   const mode=document.querySelector('input[name="tr"]:checked').value;
   const xEl=document.getElementById('t-x-row'),abEl=document.getElementById('t-ab-row');
   xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
-  const x=+document.getElementById('tx').value||0;
+  const x=numV('tx',2.228);
   const a_=numV('ta',-2);
   const b_=numV('tb',2);
   const CDF=v=>jStat.studentt.cdf(v,df);
@@ -925,7 +926,7 @@ function calcT(){
 }
 function calcTCrit(){
   const df=+document.getElementById('tv').value||10;
-  const a=+document.getElementById('talpha').value||0.05;
+  const a=Math.min(0.999,Math.max(0.0001,numV('talpha',0.05)));
   const tail=document.querySelector('input[name="ttail"]:checked').value;
   const t=tail==='two'?jStat.studentt.inv(1-a/2,df):jStat.studentt.inv(1-a,df);
   document.getElementById('t-crit').textContent=`t = ${t.toFixed(4)}`;
@@ -937,9 +938,9 @@ function calcChi(){
   const mode=document.querySelector('input[name="cr"]:checked').value;
   const xEl=document.getElementById('chi-x-row'),abEl=document.getElementById('chi-ab-row');
   xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';
-  const x=Math.max(0,+document.getElementById('cx').value||0);
-  const a_=Math.max(0,+document.getElementById('ca').value||0);
-  const b_=Math.max(a_,+document.getElementById('cb').value||5);
+  const x=Math.max(0,numV('cx',11.07));
+  const a_=Math.max(0,numV('ca',1));
+  const b_=Math.max(a_,numV('cb',12));
   const CDF=v=>v<=0?0:jStat.chisquare.cdf(v,df);
   const PDF=v=>v<=0?0:jStat.chisquare.pdf(v,df);
   const hi=Math.max(x,b_,df*3+10);
@@ -962,26 +963,33 @@ function calcChiCrit(){
 
 /* ══ F DE FISHER ═════════════════════════════════════════════════ */
 function calcF(){
-  const df1=+document.getElementById('fv1').value||5;
-  const df2=+document.getElementById('fv2').value||20;
+  const df1=numV('fv1',5);
+  const df2=numV('fv2',20);
   const mode=document.querySelector('input[name="fr"]:checked').value;
-  const x=Math.max(0,+document.getElementById('fx').value||0);
+  const xEl=document.getElementById('f-x-row'),abEl=document.getElementById('f-ab-row');
+  if(xEl&&abEl){xEl.style.display=mode==='bt'?'none':'';abEl.style.display=mode==='bt'?'':'none';}
+  const x=Math.max(0,numV('fx',2.71));
+  const a_=Math.max(0,numV('fa',0.5));
+  const b_=Math.max(a_,numV('fb',2.71));
   const CDF=v=>v<=0?0:jStat.centralF.cdf(v,df1,df2);
   const PDF=v=>v<=0?0:jStat.centralF.pdf(v,df1,df2);
-  const hiX=Math.max(x+2,jStat.centralF.inv(0.999,df1,df2));
+  const hiX=Math.max(x+2,b_+1,jStat.centralF.inv(0.995,df1,df2));
   let prob,lo,hiF,label;
   if(mode==='le'){prob=CDF(x);lo=0;hiF=x;label=`P(F ≤ ${x.toFixed(3)})`;}
-  else{prob=1-CDF(x);lo=x;hiF=hiX;label=`P(F ≥ ${x.toFixed(3)})`;}
+  else if(mode==='ge'){prob=1-CDF(x);lo=x;hiF=hiX;label=`P(F ≥ ${x.toFixed(3)})`;}
+  else{prob=CDF(b_)-CDF(a_);lo=a_;hiF=b_;label=`P(${a_.toFixed(2)} ≤ F ≤ ${b_.toFixed(2)})`;}
   document.getElementById('f-probs').innerHTML=probBoxes([{l:label,v:f4(prob),main:true},{l:'Complemento',v:f4(1-prob)}]);
   const xs=xRange(0.01,hiX);
   drawContChart('f',xs,xs.map(PDF),lo,hiF);
   calcFCrit();
 }
 function calcFCrit(){
-  const df1=+document.getElementById('fv1').value||5;
-  const df2=+document.getElementById('fv2').value||20;
-  const a=+document.getElementById('falpha').value||0.05;
-  const c=jStat.centralF.inv(1-a,df1,df2);
+  const df1=numV('fv1',5);
+  const df2=numV('fv2',20);
+  const a=Math.min(0.999,Math.max(0.0001,numV('falpha',0.05)));
+  const tailEl=document.querySelector('input[name="ftail"]:checked');
+  const tail=tailEl?tailEl.value:'upper';
+  const c=tail==='upper'?jStat.centralF.inv(1-a,df1,df2):jStat.centralF.inv(a,df1,df2);
   document.getElementById('f-crit').textContent=`F = ${c.toFixed(4)}`;
 }
 
@@ -1064,13 +1072,13 @@ function calcPow(){
   powChart=new Chart(document.getElementById('pow-chart').getContext('2d'),{
     type:'line',
     data:{labels:ns.map(String),datasets:[
-      {data:pows,borderColor:'#4fc3c8',borderWidth:2.5,pointRadius:0,fill:false,tension:0.4},
-      {data:ns.map(()=>0.8),borderColor:'rgba(200,169,110,.5)',borderWidth:1.5,
+      {data:pows,borderColor:cCyan(),borderWidth:2.5,pointRadius:0,fill:false,tension:0.4},
+      {data:ns.map(()=>target),borderColor:cGold(),borderWidth:1.5,
        pointRadius:0,fill:false,borderDash:[6,4]}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:ct(),maxTicksLimit:10,font:{size:10}},grid:{color:cg()},title:{display:true,text:'n por grupo',color:ct()}},
+      scales:{x:{ticks:{color:ct(),maxTicksLimit:10,font:{size:10}},grid:{color:cg()},title:{display:true,text:type==='two'?'n por grupo':'n (tamaño de muestra)',color:ct()}},
               y:{ticks:{color:ct(),font:{size:10}},grid:{color:cg()},min:0,max:1,title:{display:true,text:'Potencia (1−β)',color:ct()}}}}
   });
 }
@@ -1106,9 +1114,9 @@ function buildInf(){
   };
   document.getElementById('inf-alt-row').style.display=(type==='chiGof'||type==='chiInd')?'none':'';
   if(type==='chiGof'){
-    document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label>Frecuencias observadas O (separadas por coma)</label><input id="igof-o" type="text" value="18, 22, 30, 30" oninput="calcInf()"></div><div class="fr"><label>Frecuencias esperadas E</label><input id="igof-e" type="text" value="25, 25, 25, 25" oninput="calcInf()"></div>${infField('igof-m','Parámetros estimados con los datos',0,0)}`;
+    document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label for="igof-o">Frecuencias observadas O (separadas por coma)</label><input id="igof-o" type="text" value="18, 22, 30, 30" oninput="calcInf()"></div><div class="fr"><label for="igof-e">Frecuencias esperadas E</label><input id="igof-e" type="text" value="25, 25, 25, 25" oninput="calcInf()"></div>${infField('igof-m','Parámetros estimados con los datos',0,0)}`;
   }else if(type==='chiInd'){
-    document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label>Tabla observada (comas = columnas; punto y coma = filas)</label><input id="iind-table" type="text" value="20, 30; 25, 25" oninput="calcInf()"></div>`;
+    document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label for="iind-table">Tabla observada (comas = columnas; punto y coma = filas)</label><input id="iind-table" type="text" value="20, 30; 25, 25" oninput="calcInf()"></div>`;
   }else document.getElementById('inf-inputs').innerHTML=fields[type].map(v=>infField(...v)).join('');
   calcInf();
 }
@@ -1212,13 +1220,13 @@ calcBin();calcPoi();calcHyp();calcGeo();
 calcNor();calcT();calcChi();calcF();calcUni();calcExp();
 calcPow();
 setInfFamily('z');
-(function(){const s=localStorage.getItem('theme-prob');if(s==='light')toggleTheme();})();
+(function(){try{const s=localStorage.getItem('theme-prob');if(s==='light')toggleTheme();}catch(e){}})();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js')
-      .then(r=>console.log('SW:',r.scope))
-      .catch(e=>console.warn('SW err:',e));
+    navigator.serviceWorker.register('./sw.js',{scope:'./'})
+      .then(r=>console.log('SW registrado:',r.scope))
+      .catch(e=>console.warn('SW no disponible en este entorno:',e));
   });
 }
 </script>

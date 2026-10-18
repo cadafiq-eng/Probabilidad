@@ -1,7 +1,58 @@
-/* HumAIno® · Probabilidad y Distribuciones · SW v1.5.0 */
-const CACHE='hia-prob-v1.5.0';
-const LOCAL=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./jstat.min.js','./chart.umd.min.js'];
-const REMOTE=['https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap'];
-self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(LOCAL);await Promise.allSettled(REMOTE.map(u=>c.add(u)));await self.skipWaiting();})()));
-self.addEventListener('activate',e=>e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})()));
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;if(e.request.mode==='navigate'){e.respondWith((async()=>{try{const r=await fetch(e.request);const c=await caches.open(CACHE);c.put('./index.html',r.clone());return r;}catch(_){return (await caches.match('./index.html'))||(await caches.match('./'));}})());return;}e.respondWith((async()=>{const hit=await caches.match(e.request);if(hit)return hit;try{const r=await fetch(e.request);if(r&&(r.ok||r.type==='opaque')){const c=await caches.open(CACHE);c.put(e.request,r.clone());}return r;}catch(_){return hit||Response.error();}})());});
+/* Service Worker — Probabilidad y Distribuciones · HumAIno® */
+const CACHE_NAME = 'humaino-probabilidad-v1.6';
+const CORE_ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
+];
+const OPTIONAL_ASSETS = [
+  './jstat.min.js',
+  './chart.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/jstat@1.9.6/dist/jstat.min.js',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(CORE_ASSETS);
+      for (const url of OPTIONAL_ASSETS) {
+        try {
+          await cache.add(url);
+        } catch (err) {
+          // Ignorar si un recurso opcional no está presente localmente
+        }
+      }
+    }).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+      return cachedResponse || fetchPromise;
+    })
+  );
+});
