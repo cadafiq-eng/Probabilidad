@@ -73,8 +73,20 @@ main{padding:28px 24px;max-width:1100px;margin:0 auto;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:18px;}
 .ctitle{font-weight:700;font-size:.8rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
 label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.04em;}
-input[type=number],input[type=text],select{width:100%;background:var(--surface2);border:1px solid var(--border);
+input[type=number],input[type=text],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
   color:var(--text);font-family:var(--ff-m);font-size:.88rem;padding:8px 12px;border-radius:7px;outline:none;}
+textarea{resize:vertical;min-height:68px;line-height:1.45;}
+textarea:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,169,110,.2);}
+.data-box{background:rgba(79,195,200,.05);border:1px dashed var(--border);border-radius:9px;padding:12px 14px;margin-bottom:14px;}
+.data-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.file-lbl{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--gold-dim);
+  color:var(--gold);padding:5px 11px;border-radius:6px;font-size:.76rem;font-weight:700;cursor:pointer;margin:0;}
+.file-lbl:hover{background:rgba(200,169,110,.12);}
+.mini-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 10px;
+  border-radius:6px;font-size:.75rem;font-family:var(--ff-u);font-weight:600;cursor:pointer;}
+.mini-btn:hover{border-color:var(--gold-dim);color:var(--text);}
+.data-summary{font-family:var(--ff-m);font-size:.78rem;color:var(--cyan);background:var(--surface2);
+  border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-top:8px;line-height:1.5;}
 input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,169,110,.2);}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 input[type=range]{width:100%;accent-color:var(--gold);}
@@ -352,10 +364,30 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 </div>
 <!-- t-STUDENT -->
 <div class="subpanel" id="c-t">
-<div class="ibox"><strong>t-Student t(ν)</strong> — ν = grados de libertad. Más pesada que normal; converge a N(0,1) para ν grande.</div>
+<div class="ibox" id="t-case"><strong>t-Student t(ν)</strong> — ν = grados de libertad. Ideal para inferencia sobre medias con muestras pequeñas (n ≤ 30) y σ desconocida.</div>
 <div class="g2">
 <div class="card">
 <div class="ctitle">Parámetros</div>
+<div class="fr">
+  <div class="modebar" style="margin-bottom:8px">
+    <button type="button" class="modebtn active" id="t-mode-param" onclick="setTDataMode(false)">🔢 Grados de libertad ν</button>
+    <button type="button" class="modebtn" id="t-mode-raw" onclick="setTDataMode(true)">📂 Subir / pegar muestra pequeña</button>
+  </div>
+  <div id="t-raw-box" class="data-box" style="display:none">
+    <div class="data-toolbar">
+      <label class="file-lbl" for="t-file">📁 Subir CSV / TXT</label>
+      <input id="t-file" type="file" accept=".csv,.txt,.tsv" style="display:none" aria-label="Subir archivo de muestra para t-Student" onchange="loadTFile(this)"/>
+      <button type="button" class="mini-btn" onclick="loadTSampleExample()">📋 Cargar ejemplo (n=12)</button>
+      <button type="button" class="mini-btn" onclick="clearTSample()">🧹 Limpiar</button>
+    </div>
+    <label for="t-raw-input">Datos de la muestra (separados por comas, espacios o saltos de línea):</label>
+    <textarea id="t-raw-input" placeholder="Ej: 51.2, 49.8, 53.1, 50.4, 48.9, 52.0, 51.7, 49.5" oninput="parseTSample()"></textarea>
+    <div class="fr" style="margin-top:8px;margin-bottom:0"><label for="t-mu0">Media hipotética μ₀ (opcional, para estandarizar x̄ a t):</label>
+      <input id="t-mu0" type="number" step="any" value="50" oninput="parseTSample()"/>
+    </div>
+    <div id="t-raw-summary" class="data-summary">Ingresa al menos 2 valores numéricos para calcular n, ν = n−1, x̄ y s.</div>
+  </div>
+</div>
 <div class="fr"><label for="tv">ν (grados de libertad): <span class="rv" id="tv-v">10</span></label>
 <input id="tv" max="120" min="1" oninput="document.getElementById('tv-v').textContent=this.value;calcT()" type="range" value="10"/></div>
 <div class="fr"><label>Cálculo</label>
@@ -1108,11 +1140,230 @@ function calcPow(){
 }
 
 /* ══ INFERENCIA ESTADÍSTICA ═════════════════════════════════════ */
+/* ══ CARGA Y PROCESAMIENTO DE MUESTRAS PEQUEÑAS (CSV / TXT / TEXTO) ══ */
+let infRawMode=false;
+function extractNumbers(rawText){
+  if(!rawText)return[];
+  return rawText.replace(/;/g,',').split(/[\s,]+/).map(s=>s.trim()).filter(Boolean).map(Number).filter(Number.isFinite);
+}
+function parseTwoColumnsOrLists(text){
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(lines.length>=2){
+    const pairs=[];
+    for(const line of lines){
+      const parts=line.split(/[;,\t]+/).map(s=>s.trim()).filter(Boolean).map(Number);
+      if(parts.length>=2&&Number.isFinite(parts[0])&&Number.isFinite(parts[1])){
+        pairs.push([parts[0],parts[1]]);
+      }
+    }
+    if(pairs.length>=2){
+      return{col1:pairs.map(p=>p[0]),col2:pairs.map(p=>p[1]),isTwoCol:true};
+    }
+  }
+  return{col1:extractNumbers(text),col2:[],isTwoCol:false};
+}
+function sampleStats(arr){
+  const n=arr.length;
+  if(n<2)return null;
+  const mean=arr.reduce((a,b)=>a+b,0)/n;
+  const variance=arr.reduce((acc,v)=>acc+(v-mean)*(v-mean),0)/(n-1);
+  const sd=Math.sqrt(variance);
+  const sorted=[...arr].sort((a,b)=>a-b);
+  const min=sorted[0],max=sorted[n-1];
+  const med=n%2===1?sorted[(n-1)/2]:(sorted[n/2-1]+sorted[n/2])/2;
+  return{n,mean,variance,sd,min,max,med};
+}
+
+/* Funciones para muestra pequeña en Distribución t-Student (#c-t) */
+function setTDataMode(raw){
+  document.getElementById('t-raw-box').style.display=raw?'block':'none';
+  document.getElementById('t-mode-param').classList.toggle('active',!raw);
+  document.getElementById('t-mode-raw').classList.toggle('active',raw);
+}
+function loadTFile(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const nums=extractNumbers(String(e.target.result||''));
+    document.getElementById('t-raw-input').value=nums.join(', ');
+    parseTSample();
+  };
+  reader.readAsText(file);
+}
+function loadTSampleExample(){
+  document.getElementById('t-raw-input').value='51.4, 49.8, 53.2, 50.6, 48.9, 52.3, 51.7, 49.5, 52.8, 50.1, 51.9, 50.4';
+  document.getElementById('t-mu0').value='50';
+  parseTSample();
+}
+function clearTSample(){
+  document.getElementById('t-raw-input').value='';
+  document.getElementById('t-raw-summary').textContent='Ingresa al menos 2 valores numéricos para calcular n, ν = n−1, x̄ y s.';
+}
+function parseTSample(){
+  const arr=extractNumbers(document.getElementById('t-raw-input').value);
+  const sumEl=document.getElementById('t-raw-summary');
+  const st=sampleStats(arr);
+  if(!st){
+    sumEl.innerHTML='⚠️ Ingresa al menos <strong>2 valores numéricos</strong> (actual: '+arr.length+').';
+    return;
+  }
+  const df=Math.max(1,Math.min(120,st.n-1));
+  const tvEl=document.getElementById('tv');
+  tvEl.value=df;
+  document.getElementById('tv-v').textContent=st.n-1;
+  const mu0=numV('t-mu0',NaN);
+  let tInfo='';
+  if(Number.isFinite(mu0)&&st.sd>0){
+    const se=st.sd/Math.sqrt(st.n);
+    const tCalc=(st.mean-mu0)/se;
+    document.getElementById('tx').value=tCalc.toFixed(4);
+    document.getElementById('ta').value=(-Math.abs(tCalc)).toFixed(4);
+    document.getElementById('tb').value=Math.abs(tCalc).toFixed(4);
+    tInfo=`<br>Con μ₀ = ${f4(mu0)}: EE = s/√n = ${f4(se)} → <strong>t = (x̄ − μ₀)/(s/√n) = ${f4(tCalc)}</strong> (aplicado a x).`;
+  }
+  sumEl.innerHTML=`✅ <strong>Muestra cargada:</strong> n = ${st.n} · gl (ν) = ${st.n-1} · <span class="xbar">x</span> = ${f4(st.mean)} · s = ${f4(st.sd)} · s² = ${f4(st.variance)} · Rango: [${f4(st.min)}, ${f4(st.max)}]${tInfo}`;
+  calcT();
+}
+
+/* Funciones para muestras en Pruebas e intervalos (#p3) */
+function setInfDataMode(raw){
+  infRawMode=raw;
+  const p=document.getElementById('inf-raw-panel');
+  if(p)p.style.display=raw?'block':'none';
+  const bSum=document.getElementById('inf-btn-sum'),bRaw=document.getElementById('inf-btn-raw');
+  if(bSum)bSum.classList.toggle('active',!raw);
+  if(bRaw)bRaw.classList.toggle('active',raw);
+}
+function togglePairedRawMode(){
+  const mode=document.getElementById('inf-paired-mode')?.value||'pairs';
+  const s2Wrap=document.getElementById('inf-raw-s2-wrap');
+  if(s2Wrap)s2Wrap.style.display=mode==='pairs'?'block':'none';
+  applyInfRawData();
+}
+function handleInfFileUpload(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=String(e.target.result||'');
+    const type=document.getElementById('inf-type').value;
+    const isTwoSample=['mean2','mean2pool','var2','mean2z','mean2zS','paired'].includes(type);
+    const s1El=document.getElementById('inf-raw-s1');
+    const s2El=document.getElementById('inf-raw-s2');
+    if(isTwoSample&&s2El){
+      const parsed=parseTwoColumnsOrLists(text);
+      if(parsed.isTwoCol){
+        s1El.value=parsed.col1.join(', ');
+        s2El.value=parsed.col2.join(', ');
+      }else{
+        if(!s1El.value.trim())s1El.value=parsed.col1.join(', ');
+        else s2El.value=parsed.col1.join(', ');
+      }
+    }else if(s1El){
+      s1El.value=extractNumbers(text).join(', ');
+    }
+    applyInfRawData();
+  };
+  reader.readAsText(file);
+}
+function loadInfSampleExample(){
+  const type=document.getElementById('inf-type').value;
+  const s1El=document.getElementById('inf-raw-s1');
+  const s2El=document.getElementById('inf-raw-s2');
+  if(!s1El)return;
+  if(type==='paired'){
+    s1El.value='54.2, 51.0, 56.8, 49.5, 53.1, 55.4, 50.2, 52.7, 51.9, 54.0';
+    if(s2El)s2El.value='50.8, 48.5, 52.1, 47.9, 49.6, 51.0, 48.0, 49.2, 49.1, 50.5';
+  }else if(['mean2','mean2pool','var2','mean2z','mean2zS'].includes(type)){
+    s1El.value='54.2, 51.0, 56.8, 49.5, 53.1, 55.4, 50.2, 52.7, 53.9, 51.5';
+    if(s2El)s2El.value='48.1, 49.4, 46.7, 50.2, 47.8, 49.0, 45.9, 48.5, 47.2, 49.8';
+  }else{
+    s1El.value='52.4, 49.8, 54.1, 51.2, 53.0, 48.7, 55.2, 50.9, 51.8, 52.9, 50.4, 53.6';
+  }
+  applyInfRawData();
+}
+function clearInfRawData(){
+  const s1El=document.getElementById('inf-raw-s1'),s2El=document.getElementById('inf-raw-s2');
+  if(s1El)s1El.value='';
+  if(s2El)s2El.value='';
+  const sumEl=document.getElementById('inf-raw-summary');
+  if(sumEl)sumEl.textContent='Sube un archivo .csv/.txt o pega los valores para calcular automáticamente los estadísticos muestrales.';
+}
+function setInputVal(id,val){
+  const el=document.getElementById(id);
+  if(el)el.value=val;
+}
+function applyInfRawData(){
+  const type=document.getElementById('inf-type').value;
+  const sumEl=document.getElementById('inf-raw-summary');
+  const s1El=document.getElementById('inf-raw-s1');
+  const s2El=document.getElementById('inf-raw-s2');
+  if(!s1El||!sumEl)return;
+  const arr1=extractNumbers(s1El.value);
+  if(type==='paired'){
+    const pMode=document.getElementById('inf-paired-mode')?.value||'pairs';
+    if(pMode==='pairs'){
+      const arr2=extractNumbers(s2El?s2El.value:'');
+      if(arr1.length<2||arr2.length<2||arr1.length!==arr2.length){
+        sumEl.innerHTML=`⚠️ Para datos pareados (X₁, X₂), ambas muestras deben tener la <strong>misma cantidad de observaciones (n ≥ 2)</strong> (actual: n₁=${arr1.length}, n₂=${arr2.length}).`;
+        return;
+      }
+      const diffs=arr1.map((v,i)=>v-arr2[i]);
+      const st=sampleStats(diffs);
+      setInputVal('idbar',Number(st.mean.toFixed(6)));
+      setInputVal('isd',Number(st.sd.toFixed(6)));
+      setInputVal('in',st.n);
+      sumEl.innerHTML=`✅ <strong>Pares procesados:</strong> n = ${st.n} · d̄ = ${f4(st.mean)} · s_d = ${f4(st.sd)} · dᵢ = [${diffs.slice(0,8).map(d=>d.toFixed(2)).join(', ')}${diffs.length>8?', …':''}]`;
+      calcInf();
+    }else{
+      const st=sampleStats(arr1);
+      if(!st){sumEl.innerHTML='⚠️ Ingresa al menos 2 diferencias dᵢ.';return;}
+      setInputVal('idbar',Number(st.mean.toFixed(6)));
+      setInputVal('isd',Number(st.sd.toFixed(6)));
+      setInputVal('in',st.n);
+      sumEl.innerHTML=`✅ <strong>Diferencias cargadas:</strong> n = ${st.n} · d̄ = ${f4(st.mean)} · s_d = ${f4(st.sd)}`;
+      calcInf();
+    }
+    return;
+  }
+  if(['mean2','mean2pool','var2','mean2z','mean2zS'].includes(type)){
+    const arr2=extractNumbers(s2El?s2El.value:'');
+    const st1=sampleStats(arr1),st2=sampleStats(arr2);
+    if(!st1||!st2){
+      sumEl.innerHTML=`⚠️ Cada muestra debe contener al menos <strong>2 valores numéricos</strong> (actual: n₁=${arr1.length}, n₂=${arr2.length}).`;
+      return;
+    }
+    setInputVal('ix1',Number(st1.mean.toFixed(6)));
+    setInputVal('is1',Number(st1.sd.toFixed(6)));
+    setInputVal('is21',Number(st1.variance.toFixed(6)));
+    setInputVal('in1',st1.n);
+    setInputVal('ix2',Number(st2.mean.toFixed(6)));
+    setInputVal('is2',Number(st2.sd.toFixed(6)));
+    setInputVal('is22',Number(st2.variance.toFixed(6)));
+    setInputVal('in2',st2.n);
+    sumEl.innerHTML=`✅ <strong>Muestra 1:</strong> n₁ = ${st1.n}, <span class="xbar">x</span>₁ = ${f4(st1.mean)}, s₁ = ${f4(st1.sd)}, s₁² = ${f4(st1.variance)}<br>✅ <strong>Muestra 2:</strong> n₂ = ${st2.n}, <span class="xbar">x</span>₂ = ${f4(st2.mean)}, s₂ = ${f4(st2.sd)}, s₂² = ${f4(st2.variance)}`;
+    calcInf();
+    return;
+  }
+  const st=sampleStats(arr1);
+  if(!st){
+    sumEl.innerHTML=`⚠️ Ingresa al menos <strong>2 valores numéricos</strong> (actual: n=${arr1.length}).`;
+    return;
+  }
+  setInputVal('ixbar',Number(st.mean.toFixed(6)));
+  setInputVal('is',Number(st.sd.toFixed(6)));
+  setInputVal('is2',Number(st.variance.toFixed(6)));
+  setInputVal('in',st.n);
+  sumEl.innerHTML=`✅ <strong>Muestra calculada:</strong> n = ${st.n} · <span class="xbar">x</span> = ${f4(st.mean)} · s = ${f4(st.sd)} · s² = ${f4(st.variance)} · Mediana = ${f4(st.med)} · Rango: [${f4(st.min)}, ${f4(st.max)}]`;
+  calcInf();
+}
+
 let infGuided=false;
 const infField=(id,label,value,min='')=>`<div class="fr"><label for="${id}">${label}</label><input id="${id}" type="number" step="any" value="${value}" ${min!==''?`min="${min}"`:''} oninput="calcInf()"></div>`;
 const infFamilies={
   z:[['mean1z','Media de una muestra — Z (σ conocida)'],['mean1zS','Media de una muestra — Z (s, n > 30)'],['mean2z','Diferencia de dos medias — Z (σ₁, σ₂ conocidas)'],['mean2zS','Diferencia de dos medias — Z (s₁, s₂; n₁, n₂ > 30)'],['prop1','Una proporción — Z'],['prop2','Dos proporciones — Z']],
-  t:[['mean1t','Media de una muestra — t (σ desconocida)'],['mean2','Dos medias independientes — t de Welch'],['paired','Medias pareadas — t']],
+  t:[['mean1t','Media de una muestra — t (σ desconocida)'],['mean2','Dos medias independientes — t de Welch (σ₁ ≠ σ₂)'],['mean2pool','Dos medias independientes — t agrupada (σ₁ = σ₂)'],['paired','Medias pareadas — t']],
   chi:[['chiGof','Bondad de ajuste — χ²'],['chiInd','Independencia — χ²'],['var1','Una varianza — χ²']],
   f:[['var2','Razón de varianzas — F']]
 };
@@ -1130,20 +1381,72 @@ function buildInf(){
     mean1zS:[['ixbar','Media muestral <span class="xbar">x</span>',52],['imu0','Media hipotética μ₀',50],['is','Desviación muestral s',10,0],['in','Tamaño n (> 30)',40,31]],
     mean2z:[['ix1','Media muestral <span class="xbar">x</span>₁',54],['isigma1','Desviación poblacional σ₁',9,0],['in1','Tamaño n₁',30,1],['ix2','Media muestral <span class="xbar">x</span>₂',49],['isigma2','Desviación poblacional σ₂',8,0],['in2','Tamaño n₂',28,1],['idiff0','Diferencia hipotética Δ₀',0]],
     mean2zS:[['ix1','Media muestral <span class="xbar">x</span>₁',54],['is1','Desviación muestral s₁',9,0],['in1','Tamaño n₁ (> 30)',35,31],['ix2','Media muestral <span class="xbar">x</span>₂',49],['is2','Desviación muestral s₂',8,0],['in2','Tamaño n₂ (> 30)',32,31],['idiff0','Diferencia hipotética Δ₀',0]],
-    mean1t:[['ixbar','Media muestral <span class="xbar">x</span>',52],['imu0','Media hipotética μ₀',50],['is','Desviación muestral s',10,0],['in','Tamaño n',25,2]],
-    mean2:[['ix1','Media <span class="xbar">x</span>₁',54],['is1','Desviación s₁',9,0],['in1','Tamaño n₁',30,2],['ix2','Media <span class="xbar">x</span>₂',49],['is2','Desviación s₂',8,0],['in2','Tamaño n₂',28,2],['idiff0','Diferencia hipotética Δ₀',0]],
-    paired:[['idbar','Media de diferencias d̄',3],['id0','Diferencia hipotética d₀',0],['isd','Desviación de diferencias s_d',6,0],['in','Número de pares n',24,2]],
+    mean1t:[['ixbar','Media muestral <span class="xbar">x</span>',52],['imu0','Media hipotética μ₀',50],['is','Desviación muestral s',10,0],['in','Tamaño n',12,2]],
+    mean2:[['ix1','Media <span class="xbar">x</span>₁',54],['is1','Desviación s₁',9,0],['in1','Tamaño n₁',12,2],['ix2','Media <span class="xbar">x</span>₂',49],['is2','Desviación s₂',8,0],['in2','Tamaño n₂',12,2],['idiff0','Diferencia hipotética Δ₀',0]],
+    mean2pool:[['ix1','Media <span class="xbar">x</span>₁',54],['is1','Desviación s₁',9,0],['in1','Tamaño n₁',12,2],['ix2','Media <span class="xbar">x</span>₂',49],['is2','Desviación s₂',8,0],['in2','Tamaño n₂',12,2],['idiff0','Diferencia hipotética Δ₀',0]],
+    paired:[['idbar','Media de diferencias d̄',3],['id0','Diferencia hipotética d₀',0],['isd','Desviación de diferencias s_d',6,0],['in','Número de pares n',10,2]],
     prop1:[['ix','Éxitos x',62,0],['in','Tamaño n',100,1],['ip0','Proporción hipotética p₀',0.5,0]],
     prop2:[['ix1','Éxitos x₁',62,0],['in1','Tamaño n₁',100,1],['ix2','Éxitos x₂',48,0],['in2','Tamaño n₂',100,1],['idiff0','Diferencia hipotética Δ₀',0]],
-    var1:[['is2','Varianza muestral s²',25,0],['is20','Varianza hipotética σ₀²',16,0],['in','Tamaño n',20,2]],
-    var2:[['is21','Varianza muestral s₁²',25,0],['in1','Tamaño n₁',20,2],['is22','Varianza muestral s₂²',16,0],['in2','Tamaño n₂',18,2],['ir0','Razón hipotética R₀',1,0]]
+    var1:[['is2','Varianza muestral s²',25,0],['is20','Varianza hipotética σ₀²',16,0],['in','Tamaño n',12,2]],
+    var2:[['is21','Varianza muestral s₁²',25,0],['in1','Tamaño n₁',12,2],['is22','Varianza muestral s₂²',16,0],['in2','Tamaño n₂',10,2],['ir0','Razón hipotética R₀',1,0]]
   };
   document.getElementById('inf-alt-row').style.display=(type==='chiGof'||type==='chiInd')?'none':'';
+  const rawCapable=['mean1t','mean2','mean2pool','paired','var1','var2','mean1z','mean1zS','mean2z','mean2zS'];
   if(type==='chiGof'){
     document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label for="igof-o">Frecuencias observadas O (separadas por coma)</label><input id="igof-o" type="text" value="18, 22, 30, 30" oninput="calcInf()"></div><div class="fr"><label for="igof-e">Frecuencias esperadas E</label><input id="igof-e" type="text" value="25, 25, 25, 25" oninput="calcInf()"></div>${infField('igof-m','Parámetros estimados con los datos',0,0)}`;
   }else if(type==='chiInd'){
     document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label for="iind-table">Tabla observada (comas = columnas; punto y coma = filas)</label><input id="iind-table" type="text" value="20, 30; 25, 25" oninput="calcInf()"></div>`;
-  }else document.getElementById('inf-inputs').innerHTML=fields[type].map(v=>infField(...v)).join('');
+  }else{
+    const isTwoSample=['mean2','mean2pool','var2','mean2z','mean2zS'].includes(type);
+    const isPaired=type==='paired';
+    const rawUI=rawCapable.includes(type)?`
+      <div class="modebar" style="margin-bottom:10px">
+        <button type="button" class="modebtn ${infRawMode?'':'active'}" id="inf-btn-sum" onclick="setInfDataMode(false)">🔢 Estadísticos resumidos</button>
+        <button type="button" class="modebtn ${infRawMode?'active':''}" id="inf-btn-raw" onclick="setInfDataMode(true)">📂 Subir / pegar datos muestrales</button>
+      </div>
+      <div id="inf-raw-panel" class="data-box" style="display:${infRawMode?'block':'none'}">
+        <div class="data-toolbar">
+          <label class="file-lbl" for="inf-file-input">📁 Subir CSV / TXT${isTwoSample||isPaired?' (1 o 2 cols)':''}</label>
+          <input id="inf-file-input" type="file" accept=".csv,.txt,.tsv" style="display:none" aria-label="Subir archivo CSV o TXT con datos de la muestra" onchange="handleInfFileUpload(this)"/>
+          <button type="button" class="mini-btn" onclick="loadInfSampleExample()">📋 Ejemplo de muestra pequeña</button>
+          <button type="button" class="mini-btn" onclick="clearInfRawData()">🧹 Limpiar</button>
+        </div>
+        ${isPaired?`
+          <div class="fr" style="margin-bottom:8px">
+            <label for="inf-paired-mode">Formato de datos pareados:</label>
+            <select id="inf-paired-mode" onchange="togglePairedRawMode()">
+              <option value="pairs" selected>Dos columnas / muestras: Antes (X₁) y Después (X₂) → calcula dᵢ = X₁ᵢ − X₂ᵢ</option>
+              <option value="diffs">Una columna: Diferencias directas dᵢ</option>
+            </select>
+          </div>
+          <div id="inf-raw-s1-wrap" class="fr" style="margin-bottom:8px">
+            <label for="inf-raw-s1">Muestra 1 / Antes (X₁) — o Diferencias dᵢ:</label>
+            <textarea id="inf-raw-s1" placeholder="Ej: 54.2, 51.0, 56.8, 49.5, 53.1, 55.4, 50.2, 52.7" oninput="applyInfRawData()"></textarea>
+          </div>
+          <div id="inf-raw-s2-wrap" class="fr" style="margin-bottom:4px">
+            <label for="inf-raw-s2">Muestra 2 / Después (X₂):</label>
+            <textarea id="inf-raw-s2" placeholder="Ej: 50.8, 48.5, 52.1, 47.9, 49.6, 51.0, 48.0, 49.2" oninput="applyInfRawData()"></textarea>
+          </div>
+        `:isTwoSample?`
+          <div class="fr" style="margin-bottom:8px">
+            <label for="inf-raw-s1">Datos Muestra 1 (separados por comas, espacios o saltos de línea):</label>
+            <textarea id="inf-raw-s1" placeholder="Ej: 54.2, 51.0, 56.8, 49.5, 53.1, 55.4, 50.2, 52.7" oninput="applyInfRawData()"></textarea>
+          </div>
+          <div class="fr" style="margin-bottom:4px">
+            <label for="inf-raw-s2">Datos Muestra 2 (separados por comas, espacios o saltos de línea):</label>
+            <textarea id="inf-raw-s2" placeholder="Ej: 48.1, 49.4, 46.7, 50.2, 47.8, 49.0, 45.9, 48.5" oninput="applyInfRawData()"></textarea>
+          </div>
+        `:`
+          <div class="fr" style="margin-bottom:4px">
+            <label for="inf-raw-s1">Datos de la muestra (separados por comas, espacios o saltos de línea):</label>
+            <textarea id="inf-raw-s1" placeholder="Ej: 52.4, 49.8, 54.1, 51.2, 53.0, 48.7, 55.2, 50.9, 51.8, 52.9" oninput="applyInfRawData()"></textarea>
+          </div>
+        `}
+        <div id="inf-raw-summary" class="data-summary">Sube un archivo .csv/.txt o pega los valores para calcular automáticamente los estadísticos muestrales.</div>
+      </div>
+    `:'';
+    document.getElementById('inf-inputs').innerHTML=rawUI+fields[type].map(v=>infField(...v)).join('');
+  }
   calcInf();
 }
 function setInfMode(guided){
@@ -1213,6 +1516,10 @@ function calcInf(){
       const x1=v('ix1'),x2=v('ix2'),s1=v('is1'),s2=v('is2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(s1,s2,n1,n2)||n1<=1||n2<=1)throw Error('Las desviaciones deben ser positivas y n₁, n₂ mayores que 1.');
       const a=s1*s1/n1,b=s2*s2/n2;df=(a+b)**2/(a*a/(n1-1)+b*b/(n2-1));estimate=x1-x2;se=Math.sqrt(a+b);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=estimate-c*se;hi=estimate+c*se;symbol='t';dist=`t de Welch (${df.toFixed(2)} gl)`;
       parameter='μ₁−μ₂';nullValue=f4(d0);formula='t = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(s₁²/n₁+s₂²/n₂)';steps=`EE = √(${f4(s1)}²/${n1} + ${f4(s2)}²/${n2}) = ${f4(se)}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}<br>gl de Welch = ${df.toFixed(4)}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± t*·EE';
+    }else if(type==='mean2pool'){
+      const x1=v('ix1'),x2=v('ix2'),s1=v('is1'),s2=v('is2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(s1,s2,n1,n2)||n1<=1||n2<=1)throw Error('Las desviaciones deben ser positivas y n₁, n₂ mayores que 1.');
+      df=n1+n2-2;const sp2=((n1-1)*s1*s1+(n2-1)*s2*s2)/df,sp=Math.sqrt(sp2);estimate=x1-x2;se=sp*Math.sqrt(1/n1+1/n2);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=estimate-c*se;hi=estimate+c*se;symbol='t';dist=`t agrupada (${df} gl)`;
+      parameter='μ₁−μ₂';nullValue=f4(d0);formula='t = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀] / [s_p·√(1/n₁+1/n₂)]';steps=`s_p² = [(${n1}−1)(${f4(s1)}²) + (${n2}−1)(${f4(s2)}²)] / ${df} = ${f4(sp2)} → s_p = ${f4(sp)}<br>EE = ${f4(sp)}·√(1/${n1}+1/${n2}) = ${f4(se)}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}, gl = ${df}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± t<sub>1−α/2, gl</sub>·s_p·√(1/n₁+1/n₂)';
     }else if(type==='paired'){
       const d=v('idbar'),d0=v('id0'),sd=v('isd'),n=v('in'); if(!positive(sd,n)||n<=1)throw Error('s_d debe ser positiva y n mayor que 1.');
       df=n-1;estimate=d;se=sd/Math.sqrt(n);stat=(d-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=d-c*se;hi=d+c*se;symbol='t';dist=`t pareada (${df} gl)`;
