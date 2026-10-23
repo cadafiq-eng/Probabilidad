@@ -149,7 +149,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <span class="logo">HumAIno®</span>
 <span style="color:var(--border)">│</span>
 <h1>Probabilidad y Distribuciones</h1>
-<span class="badge" style="margin-left:auto">v1.5</span>
+<span class="badge" style="margin-left:auto">v1.7</span>
 <button aria-label="Cambiar entre modo oscuro y claro" class="thbtn" id="theme-toggle-btn" onclick="toggleTheme()"><span aria-hidden="true" id="thi">☀️</span><span id="thl">Claro</span></button>
 </header>
 <nav aria-label="Módulos principales" class="tab-bar" role="tablist">
@@ -587,7 +587,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <!-- ══ P3: INFERENCIA ══ -->
 <section class="panel" id="p3">
 <div class="sh"><h2>Pruebas de hipótesis e intervalos de confianza</h2>
-<p>Selecciona la distribución de referencia y desarrolla conjuntamente la prueba y la estimación</p></div>
+<p>Elige el objetivo (estimación, prueba de hipótesis o ambas) y la distribución de referencia</p></div>
 <div class="subtab-bar">
 <button class="subtab-btn active" id="if-z" onclick="setInfFamily('z')"><span class="sticon">Z</span><span class="stlabel">Normal Z</span></button>
 <button class="subtab-btn" id="if-t" onclick="setInfFamily('t')"><span class="sticon">t</span><span class="stlabel">t-Student</span></button>
@@ -597,6 +597,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <div class="g2">
 <div class="card">
 <div class="ctitle">Procedimiento</div>
+<div class="fr"><label>Objetivo</label><div class="modebar" style="margin:0" role="group" aria-label="Objetivo del análisis"><button type="button" class="modebtn" id="goal-est" onclick="setInfGoal('est')" aria-pressed="false">📏 Estimación</button><button type="button" class="modebtn" id="goal-test" onclick="setInfGoal('test')" aria-pressed="false">⚖️ Prueba de hipótesis</button><button type="button" class="modebtn active" id="goal-both" onclick="setInfGoal('both')" aria-pressed="true">🔗 Ambas</button></div><div id="goal-hint" style="font-size:.78rem;color:var(--muted);margin-top:6px"></div></div>
 <div class="fr"><label for="inf-type">Selecciona el caso</label>
 <select id="inf-type" onchange="buildInf()">
 <option value="mean1z">Media de una muestra — Z (σ conocida)</option>
@@ -614,11 +615,17 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <option value="lt">Cola izquierda (&lt;)</option>
 </select>
 </div>
-<div class="fr"><label for="inf-alpha">Nivel de significancia α</label>
+<div class="fr" id="inf-side-row" style="display:none"><label for="inf-side">Tipo de intervalo</label>
+<select id="inf-side" onchange="calcInf()"><option value="two" selected>Bilateral: [L, U]</option><option value="lower">Unilateral: cota inferior [L, ∞)</option><option value="upper">Unilateral: cota superior (−∞, U]</option></select>
+</div>
+<div class="fr" id="inf-conf-row" style="display:none"><label for="inf-conf">Nivel de confianza 1 − α</label>
+<select id="inf-conf" onchange="calcInf()"><option value="0.90">90%</option><option value="0.95" selected>95%</option><option value="0.98">98%</option><option value="0.99">99%</option></select>
+</div>
+<div class="fr" id="inf-alpha-row"><label for="inf-alpha">Nivel de significancia α</label>
 <select id="inf-alpha" onchange="calcInf()"><option value="0.01">0.01</option><option selected="" value="0.05">0.05</option><option value="0.10">0.10</option></select>
 </div>
 <div id="inf-inputs"></div>
-<button class="btn" onclick="calcInf()">⚡ Calcular inferencia</button>
+<button class="btn" onclick="calcInf()">⚡ Calcular</button>
 </div>
 <div class="card">
 <div class="ctitle">Resultados</div>
@@ -647,7 +654,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <div class="g2">
 <div class="card"><div class="ctitle">Distribuciones</div><p>En <strong>discretas</strong>, k representa un conteo entero: P(X=k), P(X≤k) y P(X≥k). En <strong>continuas</strong>, la probabilidad corresponde al área bajo la curva; la probabilidad exacta en un solo punto es cero.</p></div>
 <div class="card"><div class="ctitle">Potencia</div><p>Introduce Δ, σ, tamaño muestral y α. La app presenta 1−β y n objetivo, mediante <strong>aproximación normal para pruebas bilaterales</strong>. Para dos muestras, n se interpreta <strong>por grupo</strong>; los cálculos presuponen grupos independientes de igual tamaño y desviación común.</p></div>
-<div class="card"><div class="ctitle">Inferencia</div><p>Elige familia Z, t, χ² o F, define H₁ y α. El valor p se compara con α; <strong>no rechazar H₀</strong> no demuestra que H₀ sea verdadera. Los intervalos mostrados son <strong>bilaterales</strong>, incluso si la prueba es unilateral.</p></div>
+<div class="card"><div class="ctitle">Inferencia</div><p>Elige familia Z, t, χ² o F, define H₁ y α. El valor p se compara con α; <strong>no rechazar H₀</strong> no demuestra que H₀ sea verdadera. Con el objetivo <strong>Estimación</strong> obtienes el estimador puntual y el intervalo de confianza sin plantear H₀, con nivel de confianza y cota bilateral o unilateral a elegir. En <strong>Ambas</strong>, el intervalo es bilateral aunque la prueba sea unilateral.</p></div>
 <div class="card"><div class="ctitle">Supuestos</div><p>Comprueba independencia, mecanismo de muestreo y distribución de datos. Para χ² revisa las frecuencias esperadas. En varianzas, la inferencia clásica χ²/F es particularmente sensible a la falta de normalidad.</p></div>
 </div>
 <div class="card"><div class="ctitle">Preguntas frecuentes (FAQ)</div>
@@ -667,7 +674,7 @@ footer a{color:var(--gold-dim);text-decoration:none;}
 <footer>
 <div style="max-width:700px;margin:0 auto">
 <p style="font-size:.95rem;font-weight:700;color:var(--gold);font-family:var(--ff-h);letter-spacing:.06em;margin-bottom:6px">
-      Probabilidad y Distribuciones · v1.5</p>
+      Probabilidad y Distribuciones · v1.7</p>
 <p style="margin-bottom:10px">
 <span style="color:var(--text)">© 2025 <strong>Dr. Luis Antonio Chel-Guerrero</strong></span><br/>
 <span style="color:var(--muted);font-size:.8rem">Obra de autoría colaborativa humano–IA</span></p>
@@ -1368,11 +1375,34 @@ const infFamilies={
   f:[['var2','Razón de varianzas — F']]
 };
 let infFamily='z';
+let infGoal='both';
+const INF_NULL_IDS=['imu0','idiff0','id0','ip0','is20','ir0'];
+const INF_GOAL_HINT={est:'Calcula el estimador puntual y el intervalo de confianza. No requiere H₀ ni α.',test:'Contrasta H₀ con el estadístico de prueba, la región de rechazo y el valor p. No incluye intervalo.',both:'Prueba de hipótesis y su intervalo de confianza bilateral con nivel 1 − α.'};
+function infFamilyList(family){return infFamilies[family].filter(([v])=>infGoal!=='est'||!['chiGof','chiInd'].includes(v));}
 function setInfFamily(family){
   infFamily=family;
   Object.keys(infFamilies).forEach(k=>document.getElementById('if-'+k).classList.toggle('active',k===family));
-  document.getElementById('inf-type').innerHTML=infFamilies[family].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const sel=document.getElementById('inf-type'),prev=sel.value,list=infFamilyList(family);
+  sel.innerHTML=list.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  if(list.some(([v])=>v===prev))sel.value=prev;
   buildInf();
+}
+function setInfGoal(g){
+  infGoal=g;
+  ['est','test','both'].forEach(k=>{const b=document.getElementById('goal-'+k);b.classList.toggle('active',k===g);b.setAttribute('aria-pressed',k===g);});
+  document.getElementById('goal-hint').textContent=INF_GOAL_HINT[g];
+  document.getElementById('inf-side-row').style.display=g==='est'?'':'none';
+  document.getElementById('inf-conf-row').style.display=g==='est'?'':'none';
+  document.getElementById('inf-alpha-row').style.display=g==='est'?'none':'';
+  const sel=document.getElementById('inf-type'),prev=sel.value,list=infFamilyList(infFamily);
+  sel.innerHTML=list.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  if(list.some(([v])=>v===prev)){sel.value=prev;infApplyGoalFields();calcInf();}
+  else buildInf();
+}
+function infApplyGoalFields(){
+  const type=document.getElementById('inf-type').value;
+  document.getElementById('inf-alt-row').style.display=(type==='chiGof'||type==='chiInd'||infGoal==='est')?'none':'';
+  INF_NULL_IDS.forEach(id=>{const el=document.getElementById(id);if(el)el.closest('.fr').style.display=infGoal==='est'?'none':'';});
 }
 function buildInf(){
   const type=document.getElementById('inf-type').value;
@@ -1390,7 +1420,7 @@ function buildInf(){
     var1:[['is2','Varianza muestral s²',25,0],['is20','Varianza hipotética σ₀²',16,0],['in','Tamaño n',12,2]],
     var2:[['is21','Varianza muestral s₁²',25,0],['in1','Tamaño n₁',12,2],['is22','Varianza muestral s₂²',16,0],['in2','Tamaño n₂',10,2],['ir0','Razón hipotética R₀',1,0]]
   };
-  document.getElementById('inf-alt-row').style.display=(type==='chiGof'||type==='chiInd')?'none':'';
+  document.getElementById('inf-alt-row').style.display=(type==='chiGof'||type==='chiInd'||infGoal==='est')?'none':'';
   const rawCapable=['mean1t','mean2','mean2pool','paired','var1','var2','mean1z','mean1zS','mean2z','mean2zS'];
   if(type==='chiGof'){
     document.getElementById('inf-inputs').innerHTML=`<div class="fr"><label for="igof-o">Frecuencias observadas O (separadas por coma)</label><input id="igof-o" type="text" value="18, 22, 30, 30" oninput="calcInf()"></div><div class="fr"><label for="igof-e">Frecuencias esperadas E</label><input id="igof-e" type="text" value="25, 25, 25, 25" oninput="calcInf()"></div>${infField('igof-m','Parámetros estimados con los datos',0,0)}`;
@@ -1446,6 +1476,7 @@ function buildInf(){
       </div>
     `:'';
     document.getElementById('inf-inputs').innerHTML=rawUI+fields[type].map(v=>infField(...v)).join('');
+    INF_NULL_IDS.forEach(id=>{const el=document.getElementById(id);if(el)el.closest('.fr').style.display=infGoal==='est'?'none':'';});
   }
   calcInf();
 }
@@ -1484,72 +1515,172 @@ function calcChiApplied(type,alpha){
   document.getElementById('inf-result').innerHTML=`<div class="formula">${hypotheses}</div>`+mH([{l:'Prueba',v:label},{l:'χ² calculada',v:f4(stat),c:'hi'},{l:'χ² crítica',v:f4(critical)},{l:'valor p',v:f4(p)}])+`<div class="alert ${reject?'aw':'as'}"><strong>${decision}</strong>, porque p ${reject?'&lt;':'≥'} α (${f4(p)} ${reject?'&lt;':'≥'} ${alpha}).</div>`;
   document.getElementById('inf-guide').innerHTML=`<div class="ctitle">Secuencia de cálculo: ${label}</div><div class="formula"><strong>1. Hipótesis</strong><br>${hypotheses}<br><br><strong>2. Fórmula general</strong><br>${formula}<br>${detail}<br><br><strong>3. Tabla de cálculo</strong></div><div class="scroll-x"><table class="tbl"><thead><tr><th>Categoría/celda</th><th>O</th><th>E</th><th>O−E</th><th>(O−E)²/E</th></tr></thead><tbody>${rows}<tr class="hi-row"><td colspan="4">Σ</td><td>${f4(stat)}</td></tr></tbody></table></div><div class="formula"><strong>4. Resultado</strong><br>χ² = ${f4(stat)}; χ² crítica = ${f4(critical)}; valor p = ${f4(p)}.<br><strong>${decision}</strong> con α = ${alpha}.</div>`;
 }
+/* ══ INFERENCIA: estimación (puntual + IC), prueba de hipótesis o ambas ══
+   infCI(m,a,side): intervalo con nivel 1−a; side = two | lower | upper.
+   Unilateral: se usa el cuantil 1−a en lugar de 1−a/2.
+   z / t / Wald:  est ± c·EE
+   Wilson (p):    [p̂ + z²/2n ± z√(p̂q̂/n + z²/4n²)] / (1 + z²/n)
+   σ² (χ²):       [(n−1)s²/χ²₍₁₋ₐ/₂₎, (n−1)s²/χ²₍ₐ/₂₎]
+   σ₁²/σ₂² (F):   [(s₁²/s₂²)/F₍₁₋ₐ/₂₎, (s₁²/s₂²)/F₍ₐ/₂₎]
+═══════════════════════════════════════════════════════════════════*/
+const fq=q=>(+q.toFixed(4)).toString();
+function infCI(m,a,side){
+  const tw=side==='two',q=tw?1-a/2:1-a,ql=tw?a/2:a;let lo,hi,crit,critLbl,me=NaN;
+  if(m.kind==='z'||m.kind==='t'||m.kind==='wald2'){
+    crit=m.kind==='t'?jStat.studentt.inv(q,m.df):zp(q);
+    critLbl=m.kind==='t'?`t<sub>${fq(q)}; ${m.dfTxt}</sub>`:`z<sub>${fq(q)}</sub>`;
+    me=crit*m.se;lo=side==='upper'?-Infinity:m.est-me;hi=side==='lower'?Infinity:m.est+me;
+  }else if(m.kind==='wilson'){
+    crit=zp(q);critLbl=`z<sub>${fq(q)}</sub>`;
+    const z=crit,n=m.n,ph=m.est,den=1+z*z/n,c=(ph+z*z/(2*n))/den,h=z*Math.sqrt(ph*(1-ph)/n+z*z/(4*n*n))/den;
+    lo=side==='upper'?0:Math.max(0,c-h);hi=side==='lower'?1:Math.min(1,c+h);
+    const wse=Math.sqrt(ph*(1-ph)/n);me=z*wse;
+    m.wald=[side==='upper'?0:Math.max(0,ph-me),side==='lower'?1:Math.min(1,ph+me)];
+  }else if(m.kind==='chi'){
+    const num=m.df*m.est,cu=jStat.chisquare.inv(q,m.df),cl=jStat.chisquare.inv(ql,m.df);
+    crit=tw?[cl,cu]:side==='lower'?cu:cl;
+    critLbl=tw?`χ²<sub>${fq(ql)}; ${m.df}</sub> = ${f4(cl)} y χ²<sub>${fq(q)}; ${m.df}</sub>`:side==='lower'?`χ²<sub>${fq(q)}; ${m.df}</sub>`:`χ²<sub>${fq(ql)}; ${m.df}</sub>`;
+    lo=side==='upper'?0:num/cu;hi=side==='lower'?Infinity:num/cl;
+  }else{
+    const fu=jStat.centralF.inv(q,m.df1,m.df2),fl=jStat.centralF.inv(ql,m.df1,m.df2);
+    crit=tw?[fl,fu]:side==='lower'?fu:fl;
+    critLbl=tw?`F<sub>${fq(ql)}; ${m.df1}, ${m.df2}</sub> = ${f4(fl)} y F<sub>${fq(q)}; ${m.df1}, ${m.df2}</sub>`:side==='lower'?`F<sub>${fq(q)}; ${m.df1}, ${m.df2}</sub>`:`F<sub>${fq(ql)}; ${m.df1}, ${m.df2}</sub>`;
+    lo=side==='upper'?0:m.est/fu;hi=side==='lower'?Infinity:m.est/fl;
+  }
+  const cv=Array.isArray(crit)?crit[1]:crit;
+  return{lo,hi,crit,critLbl,critVal:cv,me};
+}
+const fmtCI=(lo,hi)=>`${lo===-Infinity?'(−∞':'['+f4(lo)}, ${hi===Infinity?'∞)':f4(hi)+']'}`;
+function infRegion(m,alpha,alt){
+  const S=m.sym;
+  if(m.kind==='chi'||m.kind==='F'){
+    const inv=m.kind==='chi'?(q=>jStat.chisquare.inv(q,m.df)):(q=>jStat.centralF.inv(q,m.df1,m.df2));
+    if(alt==='two')return`${S} &lt; ${f4(inv(alpha/2))} o ${S} &gt; ${f4(inv(1-alpha/2))}`;
+    return alt==='gt'?`${S} &gt; ${f4(inv(1-alpha))}`:`${S} &lt; ${f4(inv(alpha))}`;
+  }
+  const inv=m.kind==='t'?(q=>jStat.studentt.inv(q,m.df)):zp;
+  if(alt==='two')return`|${S}| &gt; ${f4(inv(1-alpha/2))}`;
+  return alt==='gt'?`${S} &gt; ${f4(inv(1-alpha))}`:`${S} &lt; ${f4(-inv(1-alpha))}`;
+}
 function calcInf(){
-  const type=document.getElementById('inf-type').value,alt=document.getElementById('inf-alt').value;
-  const alpha=numV('inf-alpha',.05),conf=1-alpha;
+  const type=document.getElementById('inf-type').value,alt=document.getElementById('inf-alt').value,goal=infGoal;
+  const alpha=numV('inf-alpha',.05),conf=goal==='est'?numV('inf-conf',.95):1-alpha,aCI=1-conf,side=goal==='est'?document.getElementById('inf-side').value:'two';
   const v=id=>numV(id,NaN),positive=(...xs)=>xs.every(x=>Number.isFinite(x)&&x>0);
-  let stat,p,estimate,se,lo,hi,df='',symbol='',dist='',formula='',steps='',ciFormula='',parameter='',nullValue='';
-  const zcrit=zp(1-alpha/2);
+  let stat=NaN,p=NaN,m,formula='',steps='',ciFormula='',parameter='',nullValue='',dist='',estTxt='',seTxt='',estLbl='';
+  const resEl=document.getElementById('inf-result'),guideEl=document.getElementById('inf-guide');
+  const tst=goal!=='est';
   try{
-    if(type==='chiGof'||type==='chiInd'){calcChiApplied(type,alpha);return;}
+    if(type==='chiGof'||type==='chiInd'){
+      if(goal==='est')throw Error('Este procedimiento no tiene intervalo de confianza. Elige Prueba de hipótesis.');
+      calcChiApplied(type,alpha);return;
+    }
     if(type==='mean1z'){
       const x=v('ixbar'),mu0=v('imu0'),sigma=v('isigma'),n=v('in'); if(!positive(sigma,n))throw Error('σ y n deben ser positivos.');
-      estimate=x;se=sigma/Math.sqrt(n);stat=(x-mu0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);lo=x-zcrit*se;hi=x+zcrit*se;symbol='Z';dist='Normal estándar';
-      parameter='μ';nullValue=f4(mu0);formula='Z = (<span class="xbar">x</span> − μ₀)/(σ/√n)';steps=`Z = (${f4(x)} − ${f4(mu0)})/(${f4(sigma)}/√${n}) = ${f4(stat)}`;ciFormula=`IC = <span class="xbar">x</span> ± z<sub>1−α/2</sub>·σ/√n`;
+      m={kind:'z',est:x,se:sigma/Math.sqrt(n),sym:'Z'};if(tst){stat=(x-mu0)/m.se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);}dist='Normal estándar';
+      parameter='μ';nullValue=f4(mu0);estLbl='<span class="xbar">x</span>';estTxt=`<span class="xbar">x</span> = ${f4(x)}`;seTxt=`EE = σ/√n = ${f4(sigma)}/√${n} = ${f4(m.se)}`;
+      formula='Z = (<span class="xbar">x</span> − μ₀)/(σ/√n)';steps=`Z = (${f4(x)} − ${f4(mu0)})/(${f4(sigma)}/√${n}) = ${f4(stat)}`;ciFormula=`IC = <span class="xbar">x</span> ± z·σ/√n`;
     }else if(type==='mean1zS'){
       const x=v('ixbar'),mu0=v('imu0'),s=v('is'),n=v('in'); if(!positive(s,n)||n<=30)throw Error('Para esta aproximación Z se requiere s > 0 y n > 30; con muestras pequeñas usa t-Student.');
-      estimate=x;se=s/Math.sqrt(n);stat=(x-mu0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);lo=x-zcrit*se;hi=x+zcrit*se;symbol='Z';dist='Normal estándar aproximada';parameter='μ';nullValue=f4(mu0);
-      formula='Z ≈ (<span class="xbar">x</span> − μ₀)/(s/√n)';steps=`EE ≈ s/√n = ${f4(s)}/√${n} = ${f4(se)}<br>Z ≈ (${f4(x)} − ${f4(mu0)})/${f4(se)} = ${f4(stat)}`;ciFormula=`IC aproximado = <span class="xbar">x</span> ± z<sub>1−α/2</sub>·s/√n`;
+      m={kind:'z',est:x,se:s/Math.sqrt(n),sym:'Z'};if(tst){stat=(x-mu0)/m.se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);}dist='Normal estándar aproximada';parameter='μ';nullValue=f4(mu0);
+      estLbl='<span class="xbar">x</span>';estTxt=`<span class="xbar">x</span> = ${f4(x)}`;seTxt=`EE ≈ s/√n = ${f4(s)}/√${n} = ${f4(m.se)}`;
+      formula='Z ≈ (<span class="xbar">x</span> − μ₀)/(s/√n)';steps=`${seTxt}<br>Z ≈ (${f4(x)} − ${f4(mu0)})/${f4(m.se)} = ${f4(stat)}`;ciFormula=`IC aproximado = <span class="xbar">x</span> ± z·s/√n`;
     }else if(type==='mean2z'){
       const x1=v('ix1'),x2=v('ix2'),sig1=v('isigma1'),sig2=v('isigma2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(sig1,sig2,n1,n2))throw Error('σ₁, σ₂, n₁ y n₂ deben ser positivos.');
-      estimate=x1-x2;se=Math.sqrt((sig1*sig1)/n1+(sig2*sig2)/n2);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);lo=estimate-zcrit*se;hi=estimate+zcrit*se;symbol='Z';dist='Normal estándar';
-      parameter='μ₁−μ₂';nullValue=f4(d0);formula='Z = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(σ₁²/n₁+σ₂²/n₂)';steps=`EE = √(${f4(sig1)}²/${n1} + ${f4(sig2)}²/${n2}) = ${f4(se)}<br>Z = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± z<sub>1−α/2</sub>·√(σ₁²/n₁+σ₂²/n₂)';
+      m={kind:'z',est:x1-x2,se:Math.sqrt((sig1*sig1)/n1+(sig2*sig2)/n2),sym:'Z'};if(tst){stat=(m.est-d0)/m.se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);}dist='Normal estándar';
+      parameter='μ₁−μ₂';nullValue=f4(d0);estLbl='<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂';estTxt=`<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂ = ${f4(x1)} − ${f4(x2)} = ${f4(m.est)}`;seTxt=`EE = √(σ₁²/n₁ + σ₂²/n₂) = √(${f4(sig1)}²/${n1} + ${f4(sig2)}²/${n2}) = ${f4(m.se)}`;
+      formula='Z = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(σ₁²/n₁+σ₂²/n₂)';steps=`${seTxt}<br>Z = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(m.se)} = ${f4(stat)}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± z·√(σ₁²/n₁+σ₂²/n₂)';
     }else if(type==='mean2zS'){
       const x1=v('ix1'),x2=v('ix2'),s1=v('is1'),s2=v('is2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(s1,s2,n1,n2)||n1<=30||n2<=30)throw Error('Para esta aproximación Z se requiere s₁, s₂ > 0 y n₁, n₂ > 30; con muestras pequeñas usa t de Welch.');
-      estimate=x1-x2;se=Math.sqrt((s1*s1)/n1+(s2*s2)/n2);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);lo=estimate-zcrit*se;hi=estimate+zcrit*se;symbol='Z';dist='Normal estándar aproximada';
-      parameter='μ₁−μ₂';nullValue=f4(d0);formula='Z ≈ [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(s₁²/n₁+s₂²/n₂)';steps=`EE ≈ √(${f4(s1)}²/${n1} + ${f4(s2)}²/${n2}) = ${f4(se)}<br>Z ≈ [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}`;ciFormula='IC aproximado = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± z<sub>1−α/2</sub>·√(s₁²/n₁+s₂²/n₂)';
+      m={kind:'z',est:x1-x2,se:Math.sqrt((s1*s1)/n1+(s2*s2)/n2),sym:'Z'};if(tst){stat=(m.est-d0)/m.se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);}dist='Normal estándar aproximada';
+      parameter='μ₁−μ₂';nullValue=f4(d0);estLbl='<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂';estTxt=`<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂ = ${f4(x1)} − ${f4(x2)} = ${f4(m.est)}`;seTxt=`EE ≈ √(s₁²/n₁ + s₂²/n₂) = √(${f4(s1)}²/${n1} + ${f4(s2)}²/${n2}) = ${f4(m.se)}`;
+      formula='Z ≈ [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(s₁²/n₁+s₂²/n₂)';steps=`${seTxt}<br>Z ≈ [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(m.se)} = ${f4(stat)}`;ciFormula='IC aproximado = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± z·√(s₁²/n₁+s₂²/n₂)';
     }else if(type==='mean1t'){
       const x=v('ixbar'),mu0=v('imu0'),s=v('is'),n=v('in'); if(!positive(s,n)||n<=1)throw Error('s debe ser positiva y n mayor que 1.');
-      df=n-1;estimate=x;se=s/Math.sqrt(n);stat=(x-mu0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=x-c*se;hi=x+c*se;symbol='t';dist=`t(${df})`;
-      parameter='μ';nullValue=f4(mu0);formula='t = (<span class="xbar">x</span> − μ₀)/(s/√n)';steps=`t = (${f4(x)} − ${f4(mu0)})/(${f4(s)}/√${n}) = ${f4(stat)}, gl = ${df}`;ciFormula=`IC = <span class="xbar">x</span> ± t<sub>1−α/2, gl</sub>·s/√n`;
+      const df=n-1;m={kind:'t',est:x,se:s/Math.sqrt(n),df,dfTxt:df,sym:'t'};if(tst){stat=(x-mu0)/m.se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);}dist=`t(${df})`;
+      parameter='μ';nullValue=f4(mu0);estLbl='<span class="xbar">x</span>';estTxt=`<span class="xbar">x</span> = ${f4(x)}`;seTxt=`EE = s/√n = ${f4(s)}/√${n} = ${f4(m.se)}; gl = ${df}`;
+      formula='t = (<span class="xbar">x</span> − μ₀)/(s/√n)';steps=`t = (${f4(x)} − ${f4(mu0)})/(${f4(s)}/√${n}) = ${f4(stat)}, gl = ${df}`;ciFormula=`IC = <span class="xbar">x</span> ± t·s/√n`;
     }else if(type==='mean2'){
       const x1=v('ix1'),x2=v('ix2'),s1=v('is1'),s2=v('is2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(s1,s2,n1,n2)||n1<=1||n2<=1)throw Error('Las desviaciones deben ser positivas y n₁, n₂ mayores que 1.');
-      const a=s1*s1/n1,b=s2*s2/n2;df=(a+b)**2/(a*a/(n1-1)+b*b/(n2-1));estimate=x1-x2;se=Math.sqrt(a+b);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=estimate-c*se;hi=estimate+c*se;symbol='t';dist=`t de Welch (${df.toFixed(2)} gl)`;
-      parameter='μ₁−μ₂';nullValue=f4(d0);formula='t = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(s₁²/n₁+s₂²/n₂)';steps=`EE = √(${f4(s1)}²/${n1} + ${f4(s2)}²/${n2}) = ${f4(se)}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}<br>gl de Welch = ${df.toFixed(4)}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± t*·EE';
+      const a=s1*s1/n1,b=s2*s2/n2,df=(a+b)**2/(a*a/(n1-1)+b*b/(n2-1));m={kind:'t',est:x1-x2,se:Math.sqrt(a+b),df,dfTxt:df.toFixed(2),sym:'t'};if(tst){stat=(m.est-d0)/m.se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);}dist=`t de Welch (${df.toFixed(2)} gl)`;
+      parameter='μ₁−μ₂';nullValue=f4(d0);estLbl='<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂';estTxt=`<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂ = ${f4(x1)} − ${f4(x2)} = ${f4(m.est)}`;seTxt=`EE = √(s₁²/n₁ + s₂²/n₂) = √(${f4(s1)}²/${n1} + ${f4(s2)}²/${n2}) = ${f4(m.se)}; gl de Welch = ${df.toFixed(4)}`;
+      formula='t = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀]/√(s₁²/n₁+s₂²/n₂)';steps=`${seTxt}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(m.se)} = ${f4(stat)}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± t·EE';
     }else if(type==='mean2pool'){
       const x1=v('ix1'),x2=v('ix2'),s1=v('is1'),s2=v('is2'),n1=v('in1'),n2=v('in2'),d0=v('idiff0'); if(!positive(s1,s2,n1,n2)||n1<=1||n2<=1)throw Error('Las desviaciones deben ser positivas y n₁, n₂ mayores que 1.');
-      df=n1+n2-2;const sp2=((n1-1)*s1*s1+(n2-1)*s2*s2)/df,sp=Math.sqrt(sp2);estimate=x1-x2;se=sp*Math.sqrt(1/n1+1/n2);stat=(estimate-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=estimate-c*se;hi=estimate+c*se;symbol='t';dist=`t agrupada (${df} gl)`;
-      parameter='μ₁−μ₂';nullValue=f4(d0);formula='t = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀] / [s_p·√(1/n₁+1/n₂)]';steps=`s_p² = [(${n1}−1)(${f4(s1)}²) + (${n2}−1)(${f4(s2)}²)] / ${df} = ${f4(sp2)} → s_p = ${f4(sp)}<br>EE = ${f4(sp)}·√(1/${n1}+1/${n2}) = ${f4(se)}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(se)} = ${f4(stat)}, gl = ${df}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± t<sub>1−α/2, gl</sub>·s_p·√(1/n₁+1/n₂)';
+      const df=n1+n2-2,sp2=((n1-1)*s1*s1+(n2-1)*s2*s2)/df,sp=Math.sqrt(sp2);m={kind:'t',est:x1-x2,se:sp*Math.sqrt(1/n1+1/n2),df,dfTxt:df,sym:'t'};if(tst){stat=(m.est-d0)/m.se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);}dist=`t agrupada (${df} gl)`;
+      parameter='μ₁−μ₂';nullValue=f4(d0);estLbl='<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂';estTxt=`<span class="xbar">x</span>₁ − <span class="xbar">x</span>₂ = ${f4(x1)} − ${f4(x2)} = ${f4(m.est)}`;
+      seTxt=`s_p² = [(${n1}−1)(${f4(s1)}²) + (${n2}−1)(${f4(s2)}²)] / ${df} = ${f4(sp2)} → s_p = ${f4(sp)}<br>EE = s_p·√(1/n₁ + 1/n₂) = ${f4(m.se)}; gl = ${df}`;
+      formula='t = [(<span class="xbar">x</span>₁−<span class="xbar">x</span>₂)−Δ₀] / [s_p·√(1/n₁+1/n₂)]';steps=`${seTxt}<br>t = [(${f4(x1)}−${f4(x2)})−${f4(d0)}]/${f4(m.se)} = ${f4(stat)}`;ciFormula='IC = (<span class="xbar">x</span>₁−<span class="xbar">x</span>₂) ± t·s_p·√(1/n₁+1/n₂)';
     }else if(type==='paired'){
       const d=v('idbar'),d0=v('id0'),sd=v('isd'),n=v('in'); if(!positive(sd,n)||n<=1)throw Error('s_d debe ser positiva y n mayor que 1.');
-      df=n-1;estimate=d;se=sd/Math.sqrt(n);stat=(d-d0)/se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);const c=jStat.studentt.inv(1-alpha/2,df);lo=d-c*se;hi=d+c*se;symbol='t';dist=`t pareada (${df} gl)`;
-      parameter='μ_d';nullValue=f4(d0);formula='t = (d̄ − d₀)/(s_d/√n)';steps=`t = (${f4(d)} − ${f4(d0)})/(${f4(sd)}/√${n}) = ${f4(stat)}, gl = ${df}`;ciFormula='IC = d̄ ± t*·s_d/√n';
+      const df=n-1;m={kind:'t',est:d,se:sd/Math.sqrt(n),df,dfTxt:df,sym:'t'};if(tst){stat=(d-d0)/m.se;p=infP(stat,q=>jStat.studentt.cdf(q,df),alt);}dist=`t pareada (${df} gl)`;
+      parameter='μ_d';nullValue=f4(d0);estLbl='d̄';estTxt=`d̄ = ${f4(d)}`;seTxt=`EE = s_d/√n = ${f4(sd)}/√${n} = ${f4(m.se)}; gl = ${df}`;
+      formula='t = (d̄ − d₀)/(s_d/√n)';steps=`t = (${f4(d)} − ${f4(d0)})/(${f4(sd)}/√${n}) = ${f4(stat)}, gl = ${df}`;ciFormula='IC = d̄ ± t·s_d/√n';
     }else if(type==='prop1'){
-      const x=v('ix'),n=v('in'),p0=v('ip0'); if(!positive(n)||!Number.isInteger(n)||!Number.isInteger(x)||x<0||x>n||p0<=0||p0>=1)throw Error('Se requiere 0 ≤ x ≤ n y 0 < p₀ < 1.');
-      estimate=x/n;se=Math.sqrt(p0*(1-p0)/n);stat=(estimate-p0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);const den=1+zcrit*zcrit/n,center=(estimate+zcrit*zcrit/(2*n))/den,half=zcrit*Math.sqrt(estimate*(1-estimate)/n+zcrit*zcrit/(4*n*n))/den;lo=center-half;hi=center+half;symbol='Z';dist='Normal estándar';
-      parameter='p';nullValue=f4(p0);formula='Z = (p̂ − p₀)/√[p₀(1−p₀)/n]';steps=`p̂ = ${x}/${n} = ${f4(estimate)}<br>Z = (${f4(estimate)} − ${f4(p0)})/${f4(se)} = ${f4(stat)}`;ciFormula='IC de Wilson para p (más estable que Wald)';
+      const x=v('ix'),n=v('in'),p0=v('ip0'); if(!positive(n)||!Number.isInteger(n)||!Number.isInteger(x)||x<0||x>n)throw Error('Se requiere 0 ≤ x ≤ n, con x y n enteros.');
+      if(tst&&(p0<=0||p0>=1))throw Error('Se requiere 0 < p₀ < 1.');
+      m={kind:'wilson',est:x/n,n,se:Math.sqrt((x/n)*(1-x/n)/n),sym:'Z'};
+      if(tst){const se0=Math.sqrt(p0*(1-p0)/n);stat=(m.est-p0)/se0;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);steps=`p̂ = ${x}/${n} = ${f4(m.est)}<br>EE bajo H₀ = √[p₀(1−p₀)/n] = ${f4(se0)}<br>Z = (${f4(m.est)} − ${f4(p0)})/${f4(se0)} = ${f4(stat)}`;}
+      dist='Normal estándar';parameter='p';nullValue=f4(p0);estLbl='p̂';estTxt=`p̂ = x/n = ${x}/${n} = ${f4(m.est)}`;seTxt=`EE = √[p̂(1−p̂)/n] = ${f4(m.se)}`;
+      formula='Z = (p̂ − p₀)/√[p₀(1−p₀)/n]';ciFormula='IC de Wilson: [p̂ + z²/2n ± z·√(p̂(1−p̂)/n + z²/4n²)] / (1 + z²/n)<br>IC de Wald (clásico): p̂ ± z·√[p̂(1−p̂)/n]';
     }else if(type==='prop2'){
       const x1=v('ix1'),n1=v('in1'),x2=v('ix2'),n2=v('in2'),d0=v('idiff0'); if(!positive(n1,n2)||![n1,n2,x1,x2].every(Number.isInteger)||x1<0||x1>n1||x2<0||x2>n2)throw Error('Cada conteo debe cumplir 0 ≤ x ≤ n.');
-      const p1=x1/n1,p2=x2/n2,pooled=(x1+x2)/(n1+n2);estimate=p1-p2;se=d0===0?Math.sqrt(pooled*(1-pooled)*(1/n1+1/n2)):Math.sqrt(p1*(1-p1)/n1+p2*(1-p2)/n2);if(!Number.isFinite(se)||se<=0)throw Error('El error estándar es cero; no puede utilizarse la prueba Z. Considera métodos exactos.');stat=(estimate-d0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);const seCI=Math.sqrt(p1*(1-p1)/n1+p2*(1-p2)/n2);lo=estimate-zcrit*seCI;hi=estimate+zcrit*seCI;symbol='Z';dist='Normal estándar';
-      parameter='p₁−p₂';nullValue=f4(d0);formula='Z = [(p̂₁−p̂₂)−Δ₀]/EE';steps=`p̂₁ = ${x1}/${n1} = ${f4(p1)}; p̂₂ = ${x2}/${n2} = ${f4(p2)}<br>EE de prueba = ${f4(se)}<br>Z = (${f4(estimate)} − ${f4(d0)})/${f4(se)} = ${f4(stat)}`;ciFormula='IC = (p̂₁−p̂₂) ± z*·EE no agrupado';
+      const p1=x1/n1,p2=x2/n2,pooled=(x1+x2)/(n1+n2),seCI=Math.sqrt(p1*(1-p1)/n1+p2*(1-p2)/n2);
+      m={kind:'wald2',est:p1-p2,se:seCI,sym:'Z'};
+      if(tst){const se=d0===0?Math.sqrt(pooled*(1-pooled)*(1/n1+1/n2)):seCI;if(!Number.isFinite(se)||se<=0)throw Error('El error estándar es cero; no puede utilizarse la prueba Z. Considera métodos exactos.');stat=(m.est-d0)/se;p=infP(stat,q=>jStat.normal.cdf(q,0,1),alt);steps=`p̂₁ = ${x1}/${n1} = ${f4(p1)}; p̂₂ = ${x2}/${n2} = ${f4(p2)}<br>EE de prueba${d0===0?' (agrupado)':''} = ${f4(se)}<br>Z = (${f4(m.est)} − ${f4(d0)})/${f4(se)} = ${f4(stat)}`;}
+      dist='Normal estándar';parameter='p₁−p₂';nullValue=f4(d0);estLbl='p̂₁ − p̂₂';estTxt=`p̂₁ = ${x1}/${n1} = ${f4(p1)}; p̂₂ = ${x2}/${n2} = ${f4(p2)}<br>p̂₁ − p̂₂ = ${f4(m.est)}`;seTxt=`EE = √[p̂₁(1−p̂₁)/n₁ + p̂₂(1−p̂₂)/n₂] = ${f4(seCI)}`;
+      formula='Z = [(p̂₁−p̂₂)−Δ₀]/EE';ciFormula='IC = (p̂₁−p̂₂) ± z·√[p̂₁(1−p̂₁)/n₁ + p̂₂(1−p̂₂)/n₂]';
     }else if(type==='var1'){
-      const s2=v('is2'),s20=v('is20'),n=v('in'); if(!positive(s2,s20,n)||n<=1)throw Error('Las varianzas deben ser positivas y n mayor que 1.');
-      df=n-1;estimate=s2;stat=df*s2/s20;p=infP(stat,q=>jStat.chisquare.cdf(q,df),alt);lo=df*s2/jStat.chisquare.inv(1-alpha/2,df);hi=df*s2/jStat.chisquare.inv(alpha/2,df);symbol='χ²';dist=`χ²(${df})`;se=NaN;
-      parameter='σ²';nullValue=f4(s20);formula='χ² = (n−1)s²/σ₀²';steps=`χ² = (${n}−1)(${f4(s2)})/${f4(s20)} = ${f4(stat)}, gl = ${df}`;ciFormula='IC(σ²) = [(n−1)s²/χ²<sub>1−α/2</sub>, (n−1)s²/χ²<sub>α/2</sub>]';
+      const s2=v('is2'),s20=v('is20'),n=v('in'); if(!positive(s2,n)||n<=1)throw Error('La varianza debe ser positiva y n mayor que 1.');
+      if(tst&&!positive(s20))throw Error('La varianza hipotética σ₀² debe ser positiva.');
+      const df=n-1;m={kind:'chi',est:s2,df,se:NaN,sym:'χ²'};if(tst){stat=df*s2/s20;p=infP(stat,q=>jStat.chisquare.cdf(q,df),alt);}dist=`χ²(${df})`;
+      parameter='σ²';nullValue=f4(s20);estLbl='s²';estTxt=`s² = ${f4(s2)} (s = ${f4(Math.sqrt(s2))}); gl = n − 1 = ${df}`;
+      formula='χ² = (n−1)s²/σ₀²';steps=`χ² = (${n}−1)(${f4(s2)})/${f4(s20)} = ${f4(stat)}, gl = ${df}`;ciFormula='IC(σ²) = [(n−1)s²/χ²<sub>1−α/2</sub>, (n−1)s²/χ²<sub>α/2</sub>]';
     }else{
-      const s21=v('is21'),s22=v('is22'),n1=v('in1'),n2=v('in2'),r0=v('ir0'); if(!positive(s21,s22,n1,n2,r0)||n1<=1||n2<=1)throw Error('Varianzas y R₀ deben ser positivas; n₁ y n₂ mayores que 1.');
-      const df1=n1-1,df2=n2-1;df=`${df1}, ${df2}`;estimate=s21/s22;stat=estimate/r0;p=infP(stat,q=>jStat.centralF.cdf(q,df1,df2),alt);lo=estimate/jStat.centralF.inv(1-alpha/2,df1,df2);hi=estimate/jStat.centralF.inv(alpha/2,df1,df2);symbol='F';dist=`F(${df1}, ${df2})`;se=NaN;
-      parameter='σ₁²/σ₂²';nullValue=f4(r0);formula='F = (s₁²/s₂²)/R₀';steps=`F = (${f4(s21)}/${f4(s22)})/${f4(r0)} = ${f4(stat)}, gl₁ = ${df1}, gl₂ = ${df2}`;ciFormula='IC(σ₁²/σ₂²) = [(s₁²/s₂²)/F<sub>1−α/2</sub>, (s₁²/s₂²)/F<sub>α/2</sub>]';
+      const s21=v('is21'),s22=v('is22'),n1=v('in1'),n2=v('in2'),r0=v('ir0'); if(!positive(s21,s22,n1,n2)||n1<=1||n2<=1)throw Error('Las varianzas deben ser positivas; n₁ y n₂ mayores que 1.');
+      if(tst&&!positive(r0))throw Error('La razón hipotética R₀ debe ser positiva.');
+      const df1=n1-1,df2=n2-1;m={kind:'F',est:s21/s22,df1,df2,se:NaN,sym:'F'};if(tst){stat=m.est/r0;p=infP(stat,q=>jStat.centralF.cdf(q,df1,df2),alt);}dist=`F(${df1}, ${df2})`;
+      parameter='σ₁²/σ₂²';nullValue=f4(r0);estLbl='s₁²/s₂²';estTxt=`s₁²/s₂² = ${f4(s21)}/${f4(s22)} = ${f4(m.est)}; gl = (${df1}, ${df2})`;
+      formula='F = (s₁²/s₂²)/R₀';steps=`F = (${f4(s21)}/${f4(s22)})/${f4(r0)} = ${f4(stat)}, gl₁ = ${df1}, gl₂ = ${df2}`;ciFormula='IC(σ₁²/σ₂²) = [(s₁²/s₂²)/F<sub>1−α/2</sub>, (s₁²/s₂²)/F<sub>α/2</sub>]';
     }
-    if(!Number.isFinite(stat)||!Number.isFinite(p)||!Number.isFinite(lo)||!Number.isFinite(hi))throw Error('Los parámetros producen un cálculo no definido. Revisa los valores.');
+    const ci=goal==='test'?null:infCI(m,aCI,side);
+    if(tst&&(!Number.isFinite(stat)||!Number.isFinite(p)))throw Error('Los parámetros producen un cálculo no definido. Revisa los valores.');
+    if(ci&&(Number.isNaN(ci.lo)||Number.isNaN(ci.hi)))throw Error('Los parámetros producen un intervalo no definido. Revisa los valores.');
+    const confTxt=`${+(conf*100).toFixed(1)}%`,sideTxt=side==='two'?'bilateral':side==='lower'?'unilateral (cota inferior)':'unilateral (cota superior)';
+    const ciLbl=side==='two'?`IC ${confTxt}`:side==='lower'?`Cota inferior ${confTxt}`:`Cota superior ${confTxt}`;
+    const ciVal=ci?(side==='two'?fmtCI(ci.lo,ci.hi):side==='lower'?(m.kind==='wilson'?`[${f4(ci.lo)}, 1]`:fmtCI(ci.lo,Infinity)):(m.kind==='chi'||m.kind==='F'||m.kind==='wilson'?`[0, ${f4(ci.hi)}]`:fmtCI(-Infinity,ci.hi))):'';
+    // ---- solo estimación
+    if(goal==='est'){
+      const met=[{l:`Estimador puntual ${estLbl}`,v:f4(m.est),c:'hi'}];
+      if(Number.isFinite(m.se))met.push({l:'Error estándar',v:f4(m.se)});
+      if(side==='two'&&Number.isFinite(ci.me)&&m.kind!=='wilson')met.push({l:'Margen de error',v:f4(ci.me)});
+      met.push({l:m.kind==='wilson'?ciLbl+' · Wilson':ciLbl,v:ciVal});
+      if(m.kind==='wilson')met.push({l:ciLbl+' · Wald',v:side==='two'?`[${f4(m.wald[0])}, ${f4(m.wald[1])}]`:side==='lower'?`[${f4(m.wald[0])}, 1]`:`[0, ${f4(m.wald[1])}]`});
+      if(m.kind==='chi')met.push({l:`${ciLbl} para σ`,v:side==='upper'?`[0, ${f4(Math.sqrt(ci.hi))}]`:side==='lower'?`[${f4(Math.sqrt(ci.lo))}, ∞)`:`[${f4(Math.sqrt(ci.lo))}, ${f4(Math.sqrt(ci.hi))}]`});
+      const interp=side==='two'?`Con ${confTxt} de confianza, ${parameter} está entre ${f4(ci.lo)} y ${f4(ci.hi)}.`:side==='lower'?`Con ${confTxt} de confianza, ${parameter} es al menos ${f4(ci.lo)}.`:`Con ${confTxt} de confianza, ${parameter} es a lo más ${f4(ci.hi)}.`;
+      let note='';
+      if(m.kind==='wilson'&&Math.min(m.n*m.est,m.n*(1-m.est))<5)note='⚠️ n·p̂ o n(1−p̂) es menor que 5: el intervalo de Wald no es confiable; usa el de Wilson.';
+      if(type==='prop2'&&Math.min(v('ix1'),v('in1')-v('ix1'),v('ix2'),v('in2')-v('ix2'))<5)note='⚠️ Algunos conteos son menores que 5; el intervalo de Wald para p₁ − p₂ puede ser poco fiable.';
+      resEl.innerHTML=`${note?'<div class="alert aw">'+note+'</div>':''}<div class="formula">Parámetro: ${parameter} · Estimador puntual: ${estLbl} · Intervalo ${sideTxt}</div>`+mH(met)+`<div class="alert as">${interp}</div>`;
+      const crit=Array.isArray(ci.crit)?ci.critLbl+` = ${f4(ci.crit[1])}`:`${ci.critLbl} = ${f4(ci.crit)}`;
+      guideEl.innerHTML=`<div class="ctitle">Secuencia de cálculo · estimación</div><div class="formula"><strong>1. Estimación puntual</strong><br>${estTxt}<br><br>`+
+        (seTxt?`<strong>2. Error estándar</strong><br>${seTxt}<br><br>`:'<strong>2. Grados de libertad</strong><br>Indicados en el paso 1.<br><br>')+
+        `<strong>3. Valor crítico</strong> (nivel ${confTxt}, intervalo ${sideTxt})<br>${crit}${side==='two'?'':'<br>Para una cota unilateral se usa el cuantil 1 − α en lugar de 1 − α/2.'}<br><br>`+
+        `<strong>4. Intervalo</strong><br>${ciFormula}<br>${ciLbl} = ${ciVal}${m.kind==='wilson'?` (Wilson); Wald: [${f4(m.wald[0])}, ${f4(m.wald[1])}]`:''}<br><br><strong>5. Interpretación</strong><br>${interp}</div>`;
+      return;
+    }
     const reject=p<alpha,decision=reject?'Rechazar H₀':'No rechazar H₀';
     const relation=alt==='two'?'≠':alt==='gt'?'>':'<',hypotheses=`H₀: ${parameter} = ${nullValue}<br>H₁: ${parameter} ${relation} ${nullValue}`;
+    const region=infRegion(m,alpha,alt);
     const assumptionNote=(type==='prop1' && Math.min(v('in')*v('ip0'),v('in')*(1-v('ip0')))<5)?'⚠️ Bajo H₀, np₀ o n(1−p₀) es menor que 5. Considera prueba binomial exacta.':(type==='prop2'&&Math.min(v('ix1'),v('in1')-v('ix1'),v('ix2'),v('in2')-v('ix2'))<5)?'⚠️ Algunos conteos son pequeños. La aproximación normal puede ser poco fiable; considera método exacto o de puntuación.':'';
-    document.getElementById('inf-result').innerHTML=`${assumptionNote?'<div class="alert aw">'+assumptionNote+'</div>':''}<div class="formula">${hypotheses}</div>`+mH([{l:'Estimación',v:f4(estimate)},{l:`Estadístico ${symbol}`,v:f4(stat),c:'hi'},{l:'valor p',v:f4(p)},{l:`IC bilateral ${(conf*100).toFixed(0)}%`,v:`[${f4(lo)}, ${f4(hi)}]`}])+`<div class="alert ${reject?'aw':'as'}"><strong>${decision}</strong>, porque p ${reject?'&lt;':'≥'} α (${f4(p)} ${reject?'&lt;':'≥'} ${alpha}).</div>`;
-    document.getElementById('inf-guide').innerHTML=`<div class="ctitle">Secuencia de cálculo</div><div class="formula"><strong>1. Hipótesis</strong><br>${hypotheses}<br><br><strong>2. Estadístico (${dist})</strong><br>${formula}<br>${steps}<br><br><strong>3. Probabilidad</strong><br>valor p (${alt==='two'?'bilateral':alt==='gt'?'cola derecha':'cola izquierda'}) = ${f4(p)}<br><br><strong>4. Intervalo de confianza bilateral</strong><br>${alt==='two'?'':'Nota: la prueba seleccionada es unilateral; este IC bilateral no es su región de aceptación equivalente.<br>'}${ciFormula}<br>IC ${(conf*100).toFixed(0)}% = [${f4(lo)}, ${f4(hi)}]<br><br><strong>5. Decisión</strong><br>${decision} con α = ${alpha}.</div>`;
+    const met=[{l:`Estimador ${estLbl}`,v:f4(m.est)},{l:`Estadístico ${m.sym}`,v:f4(stat),c:'hi'},{l:'valor p',v:f4(p)}];
+    if(goal==='test')met.push({l:'Región de rechazo',v:region});else met.push({l:`IC bilateral ${confTxt}`,v:ciVal});
+    resEl.innerHTML=`${assumptionNote?'<div class="alert aw">'+assumptionNote+'</div>':''}<div class="formula">${hypotheses}</div>`+mH(met)+`<div class="alert ${reject?'aw':'as'}"><strong>${decision}</strong>, porque p ${reject?'&lt;':'≥'} α (${f4(p)} ${reject?'&lt;':'≥'} ${alpha}).</div>`;
+    const g1=`<div class="ctitle">Secuencia de cálculo${goal==='test'?' · prueba de hipótesis':''}</div><div class="formula"><strong>1. Hipótesis</strong><br>${hypotheses}<br><br><strong>2. Estadístico (${dist})</strong><br>${formula}<br>${steps}<br><br><strong>3. Valor p y región de rechazo</strong><br>valor p (${alt==='two'?'bilateral':alt==='gt'?'cola derecha':'cola izquierda'}) = ${f4(p)}<br>Región de rechazo con α = ${alpha}: ${region}<br><br>`;
+    const g4=goal==='test'?'':`<strong>4. Intervalo de confianza bilateral</strong><br>${alt==='two'?'':'Nota: la prueba seleccionada es unilateral; este IC bilateral no es su región de aceptación equivalente. Para una cota unilateral usa el objetivo Estimación.<br>'}${ciFormula}<br>IC ${confTxt} = ${ciVal}${m.kind==='wilson'?` (Wilson); Wald: [${f4(m.wald[0])}, ${f4(m.wald[1])}]`:''}<br><br>`;
+    guideEl.innerHTML=g1+g4+`<strong>${goal==='test'?4:5}. Decisión</strong><br>${decision} con α = ${alpha}.</div>`;
   }catch(err){
-    document.getElementById('inf-result').innerHTML=`<div class="alert aw">${err.message}</div>`;
-    document.getElementById('inf-guide').innerHTML='';
+    resEl.innerHTML=`<div class="alert aw">${err.message}</div>`;
+    guideEl.innerHTML='';
   }
 }
 
@@ -1560,7 +1691,7 @@ function refreshAll(){calcBin();calcPoi();calcHyp();calcGeo();calcNor();calcT();
 calcBin();calcPoi();calcHyp();calcGeo();
 calcNor();calcT();calcChi();calcF();calcUni();calcExp();
 calcPow();
-setInfFamily('z');
+setInfGoal('both');
 (function(){try{const s=localStorage.getItem('theme-prob');if(s==='light')toggleTheme();}catch(e){}})();
 
 if('serviceWorker' in navigator){

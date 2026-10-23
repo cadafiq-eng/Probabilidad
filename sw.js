@@ -1,5 +1,5 @@
 /* Service Worker — Probabilidad y Distribuciones · HumAIno® */
-const CACHE_NAME = 'humaino-probabilidad-v1.6';
+const CACHE_NAME = 'humaino-probabilidad-v1.7';
 const CORE_ASSETS = [
   './',
   './index.html',
